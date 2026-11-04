@@ -34,6 +34,8 @@
     <string name="blur_tint_color">Blur Tint Color</string>
     <string name="color_saturation">Color Saturation</string>
     <string name="general">General</string>
+    <string name="text_window_title">Окно текста</string>
+    <string name="text_window_subtitle">Сколько символов до курсора отдавать модели</string>
     <string name="enable_logging">Enable Logging</string>
     <string name="logging_desc">Disable for better performance</string>
     <string name="backup_exported">Backup exported successfully</string>

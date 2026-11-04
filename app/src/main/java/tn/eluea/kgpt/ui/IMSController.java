@@ -7,6 +7,9 @@
  */
 package tn.eluea.kgpt.ui;
 
+import android.content.Context;
+import android.content.SharedPreferences;
+
 import android.inputmethodservice.InputMethodService;
 import android.os.Handler;
 import android.os.Looper;
@@ -28,7 +31,22 @@ public class IMSController {
      * functionally equivalent while avoiding the O(field-length) copy of a
      * full getExtractedText() binder round-trip on every keystroke.
      */
-    private static final int TEXT_WINDOW_CHARS = 4000;
+
+    // было:
+    //private static final int TEXT_WINDOW_CHARS = 500;
+
+    // стало:
+    private static final int DEFAULT_TEXT_WINDOW_CHARS = 500;
+
+    private int textWindowChars() {
+		InputMethodService imsRef = ims;
+		if (imsRef == null) return DEFAULT_TEXT_WINDOW_CHARS;
+        SharedPreferences sp = ims.getSharedPreferences("keyboard_gpt_ui", Context.MODE_PRIVATE);
+        int v = sp.getInt("text_window_chars", DEFAULT_TEXT_WINDOW_CHARS);
+        // защита от ввода «0» или «999999» — иначе вернёмся к тем же фризам
+        return Math.max(50, Math.min(v, 2000));
+    }
+    //...
 
     private InputMethodService ims = null;
     private String typedText = "";
@@ -73,14 +91,18 @@ public class IMSController {
             // Bounded read first (cheap); some ICs (e.g. the Google search
             // box) return null here — fall back to a bounded extracted-text
             // read so the trigger pipeline never silently dies.
-            CharSequence beforeCursor = ic.getTextBeforeCursor(TEXT_WINDOW_CHARS, 0);
+            //CharSequence beforeCursor = ic.getTextBeforeCursor(TEXT_WINDOW_CHARS, 0);
+            CharSequence beforeCursor = ic.getTextBeforeCursor(textWindowChars(), 0);
             if (beforeCursor == null) {
                 ExtractedTextRequest req = new ExtractedTextRequest();
-                req.hintMaxChars = TEXT_WINDOW_CHARS;
+                //req.hintMaxChars = TEXT_WINDOW_CHARS;
+                req.hintMaxChars = textWindowChars();
                 ExtractedText et = ic.getExtractedText(req, 0);
                 if (et != null && et.text != null) {
                     int selEnd = Math.min(newSelEnd, et.text.length());
-                    int from = Math.max(0, selEnd - TEXT_WINDOW_CHARS);
+                    //int from = Math.max(0, selEnd - TEXT_WINDOW_CHARS);
+                    int from = Math.max(0, selEnd - textWindowChars());
+                    
                     beforeCursor = et.text.subSequence(from, selEnd);
                 }
             }

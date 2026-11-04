@@ -34,6 +34,8 @@ import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.widget.EditText;
+
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
@@ -74,6 +76,7 @@ public class SettingsFragment extends Fragment {
     private FrameLayout btnInfo;
     private MaterialButton btnTelegramSupport, btnChangelog;
     private View rootView;
+    private EditText etTextWindowChars;
 
     // Icons for candy colors
     private android.widget.ImageView iconDarkMode, iconAmoled, iconBlur, iconMaterialYou;
@@ -243,6 +246,33 @@ public class SettingsFragment extends Fragment {
         btnExportLogs = view.findViewById(R.id.btn_export_logs);
         btnLanguage = view.findViewById(R.id.btn_language);
         tvCurrentLanguage = view.findViewById(R.id.tv_current_language);
+        etTextWindowChars = view.findViewById(R.id.et_text_window_chars);
+        etTextWindowChars.setText(String.valueOf(uiPrefs.getInt("text_window_chars", 500)));
+// Сохранение: при уходе фокуса и по кнопке «Готово»
+Runnable saveTextWindow = () -> {
+    String s = etTextWindowChars.getText().toString().trim();
+    if (s.isEmpty()) return;
+    try {
+        int v = Integer.parseInt(s);
+        if (v < 50 || v > 2000) {
+            Toast.makeText(requireContext(), "Значение от 50 до 2000", Toast.LENGTH_SHORT).show();
+            etTextWindowChars.setText(String.valueOf(uiPrefs.getInt("text_window_chars", 500)));
+            return;
+        }
+        uiPrefs.edit().putInt("text_window_chars", v).apply();
+    } catch (NumberFormatException e) {
+        etTextWindowChars.setText(String.valueOf(uiPrefs.getInt("text_window_chars", 500)));
+    }
+};
+
+etTextWindowChars.setOnFocusChangeListener((v, hasFocus) -> {
+    if (!hasFocus) saveTextWindow.run();
+});
+etTextWindowChars.setOnEditorActionListener((v, actionId, event) -> {
+    saveTextWindow.run();
+    return false;
+});
+
 
         // Initialize icons for candy colors
         iconDarkMode = view.findViewById(R.id.icon_dark_mode);
