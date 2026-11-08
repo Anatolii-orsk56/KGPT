@@ -23,6 +23,7 @@ import java.lang.ref.WeakReference;
 
 import tn.eluea.kgpt.features.textactions.domain.TextAction;
 import tn.eluea.kgpt.provider.XposedConfigReader;
+import tn.eluea.kgpt.provider.ConfigClient;
 
 /**
  * Hook for intercepting text selection in any app.
@@ -56,36 +57,36 @@ public class TextSelectionHook {
         hookTextViewSelection(hookManager);
     }
 
-    private static void hookActionModeCallback(HookManager hookManager) {
-        try {
-            hookManager.hook(
-                    Activity.class,
-                    "onActionModeStarted",
-                    new Class<?>[]{ActionMode.class},
-                    MethodHook.after(param -> {
-                        if (!isEnabled()) return;
+private static void hookActionModeCallback(HookManager hookManager) {
+    try {
+        hookManager.hook(
+                Activity.class,
+                "onActionModeStarted",
+                new Class<?>[]{ActionMode.class},
+                MethodHook.after(param -> {
+                    Activity activity = (Activity) param.getThisObject();
+                    ActionMode mode = (ActionMode) param.getArgs()[0];
+                    if (mode == null) return;
 
-                        Activity activity = (Activity) param.getThisObject();
-                        ActionMode mode = (ActionMode) param.getArgs()[0];
-                        if (mode == null) return;
+                    appContextRef = new WeakReference<>(activity.getApplicationContext());
 
-                        appContextRef = new WeakReference<>(activity.getApplicationContext());
+                    if (!isEnabled()) return;
 
-                        // Inject for BOTH floating and primary action modes —
-                        // many editors use the primary type, which previously
-                        // never received the items.
-                        if (mode.getType() == ActionMode.TYPE_FLOATING
-                                || mode.getType() == ActionMode.TYPE_PRIMARY) {
-                            log("ActionMode started (type=" + mode.getType() + "), adding KGPT actions");
-                            addKGPTMenuItems(mode, activity);
-                        }
-                    })
-            );
-            log("Hooked Activity.onActionModeStarted");
-        } catch (Throwable t) {
-            log("Failed to hook Activity.onActionModeStarted: " + t.getMessage());
-        }
+                    // Inject for BOTH floating and primary action modes —
+                    // many editors use the primary type, which previously
+                    // never received the items.
+                    if (mode.getType() == ActionMode.TYPE_FLOATING
+                            || mode.getType() == ActionMode.TYPE_PRIMARY) {
+                        log("ActionMode started (type=" + mode.getType() + "), adding KGPT actions");
+                        addKGPTMenuItems(mode, activity);
+                    }
+                })
+        );
+        log("Hooked Activity.onActionModeStarted");
+    } catch (Throwable t) {
+        log("Failed to hook Activity.onActionModeStarted: " + t.getMessage());
     }
+}
 
     private static void hookTextViewSelection(HookManager hookManager) {
         try {
@@ -264,12 +265,16 @@ public class TextSelectionHook {
         });
     }
 
-    private static boolean isEnabled() {
-        // Default TRUE to match the in-app default; a false default made the
-        // injected menu items appear only when the prefs key happened to be
-        // readable/seeded — the "works once, then never" report.
-        return XposedConfigReader.getBoolean(PREF_TEXT_ACTIONS_ENABLED, true);
+
+
+private static boolean isEnabled() {
+    Context ctx = appContextRef != null ? appContextRef.get() : null;
+    if (ctx == null) {
+        log("isEnabled: context null, returning default");
+        return false; // канонический дефолт — см. примечание
     }
+    return ConfigClient.forHook(ctx).getBoolean(PREF_TEXT_ACTIONS_ENABLED, false);
+}
 
     private static void log(String message) {
         Log.d(TAG, message);

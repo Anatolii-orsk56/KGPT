@@ -33,19 +33,21 @@ public class IMSController {
      */
 
     // было:
-    //private static final int TEXT_WINDOW_CHARS = 500;
+    //private static final int TEXT_WINDOW_CHARS = 4000;
 
     // стало:
     private static final int DEFAULT_TEXT_WINDOW_CHARS = 500;
 
-    private int textWindowChars() {
-		InputMethodService imsRef = ims;
-		if (imsRef == null) return DEFAULT_TEXT_WINDOW_CHARS;
-        SharedPreferences sp = ims.getSharedPreferences("keyboard_gpt_ui", Context.MODE_PRIVATE);
-        int v = sp.getInt("text_window_chars", DEFAULT_TEXT_WINDOW_CHARS);
-        // защита от ввода «0» или «999999» — иначе вернёмся к тем же фризам
-        return Math.max(50, Math.min(v, 2000));
-    }
+private int textWindowChars() {
+    InputMethodService imsRef = ims;
+    if (imsRef == null) return DEFAULT_TEXT_WINDOW_CHARS;
+    
+int v = tn.eluea.kgpt.provider.ConfigClient.forHook(imsRef)
+        .getInt("text_window_chars", DEFAULT_TEXT_WINDOW_CHARS);
+
+    return Math.max(50, Math.min(v, 2000));
+}
+
     //...
 
     private InputMethodService ims = null;
@@ -75,44 +77,60 @@ public class IMSController {
         return UiInteractor.getInstance().getIMSController();
     }
 
-    public void onUpdateSelection(int oldSelStart,
-            int oldSelEnd,
-            int newSelStart,
-            int newSelEnd,
-            int candidatesStart,
-            int candidatesEnd) {
-        if (inputNotify) {
-            return;
-        }
-        if (ims == null)
-            return;
-        InputConnection ic = ims.getCurrentInputConnection();
-        if (ic != null) {
-            // Bounded read first (cheap); some ICs (e.g. the Google search
-            // box) return null here — fall back to a bounded extracted-text
-            // read so the trigger pipeline never silently dies.
-            //CharSequence beforeCursor = ic.getTextBeforeCursor(TEXT_WINDOW_CHARS, 0);
-            CharSequence beforeCursor = ic.getTextBeforeCursor(textWindowChars(), 0);
-            if (beforeCursor == null) {
-                ExtractedTextRequest req = new ExtractedTextRequest();
-                //req.hintMaxChars = TEXT_WINDOW_CHARS;
-                req.hintMaxChars = textWindowChars();
-                ExtractedText et = ic.getExtractedText(req, 0);
-                if (et != null && et.text != null) {
-                    int selEnd = Math.min(newSelEnd, et.text.length());
-                    //int from = Math.max(0, selEnd - TEXT_WINDOW_CHARS);
-                    int from = Math.max(0, selEnd - textWindowChars());
-                    
-                    beforeCursor = et.text.subSequence(from, selEnd);
+public void onUpdateSelection(int oldSelStart,
+        int oldSelEnd,
+        int newSelStart,
+        int newSelEnd,
+        int candidatesStart,
+        int candidatesEnd) {
+    if (inputNotify) {
+        return;
+    }
+    if (ims == null)
+        return;
+    InputConnection ic = ims.getCurrentInputConnection();
+    if (ic != null) {
+        // Bounded read first (cheap); some ICs (e.g. the Google search
+        // box) return null here — fall back to a bounded extracted-text
+        // read so the trigger pipeline never silently dies.
+        CharSequence beforeCursor = ic.getTextBeforeCursor(textWindowChars(), 0);
+        if (beforeCursor == null) {
+            ExtractedTextRequest req = new ExtractedTextRequest();
+            req.hintMaxChars = textWindowChars();
+            ExtractedText et = ic.getExtractedText(req, 0);
+            if (et != null && et.text != null) {
+                // et.text может начинаться не с нуля поля — берём реальное начало окна
+                int start = (et.partialStartOffset >= 0) ? et.partialStartOffset : 0;
+                // Курсор в координатах окна
+                int localEnd = newSelEnd - start;
+                if (localEnd > et.text.length()) localEnd = et.text.length();
+                if (localEnd >= 0) {
+                    int localFrom = Math.max(0, localEnd - textWindowChars());
+                    beforeCursor = et.text.subSequence(localFrom, localEnd);
                 }
             }
-            if (beforeCursor != null) {
-                typedText = beforeCursor.toString();
-                cursor = newSelEnd;
-                notifyTextUpdate();
-            }
         }
+
+if (beforeCursor != null) {
+    typedText = beforeCursor.toString();
+    cursor = newSelEnd;
+    notifyTextUpdate();
+    try {
+        java.io.File f = new java.io.File(
+                ims.getExternalFilesDir(null), "kgpt_debug.log");
+        java.io.FileWriter fw = new java.io.FileWriter(f, true);
+        fw.append("selEnd=" + newSelEnd
+                + " win=" + beforeCursor.length()
+                + " path=" + (typedText.length() == newSelEnd ? "full" : "window")
+                + " tail=[" + typedText.substring(Math.max(0, typedText.length() - 20))
+                + "]\n");
+        fw.close();
+    } catch (Throwable ignored) {}
+}
     }
+}
+
+
 
     public void addListener(InputEventListener listener) {
         mListeners.add(listener);

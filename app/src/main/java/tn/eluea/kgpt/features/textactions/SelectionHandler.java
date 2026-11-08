@@ -34,7 +34,7 @@ import android.view.inputmethod.ExtractedTextRequest;
 import android.view.inputmethod.InputConnection;
 
 import androidx.core.content.ContextCompat;
-
+import tn.eluea.kgpt.provider.ConfigClient;
 import tn.eluea.kgpt.features.textactions.ui.TextActionsMenuActivity;
 import tn.eluea.kgpt.provider.XposedConfigReader;
 
@@ -157,9 +157,14 @@ public class SelectionHandler {
     /**
      * Check if the text actions feature is enabled.
      */
-    public boolean isEnabled() {
-        return XposedConfigReader.getBoolean(PREF_TEXT_ACTIONS_ENABLED, true);
+    public boolean isEnabled(Context context) {
+    if (context == null) {
+        // контекст ещё не доступен — читать нечем, отдаём дефолт
+        return true;
     }
+    return ConfigClient.forHook(context).getBoolean(PREF_TEXT_ACTIONS_ENABLED, true);
+}
+
 
     /**
      * Called when selection changes in the input field.
@@ -168,11 +173,12 @@ public class SelectionHandler {
             int newSelStart, int newSelEnd) {
         this.currentImsRef = new java.lang.ref.WeakReference<>(ims);
 
-        boolean enabled = isEnabled();
+        boolean enabled = isEnabled(ims);
         tn.eluea.kgpt.util.Logger.log("SelectionHandler: onSelectionChanged. Enabled=" + enabled);
         if (!enabled) {
             return;
         }
+
 
         // Check if there's a selection (not just cursor position)
         if (newSelStart != newSelEnd && newSelEnd > newSelStart) { // Initial check

@@ -8,7 +8,7 @@
 package tn.eluea.kgpt;
 
 import android.content.Context;
-
+import tn.eluea.kgpt.provider.ConfigClient;
 import tn.eluea.kgpt.core.ai.AiResponseManager;
 import tn.eluea.kgpt.core.dispatcher.BrainDispatcher;
 import tn.eluea.kgpt.instruction.command.CommandManager;
@@ -25,6 +25,7 @@ import tn.eluea.kgpt.ui.IMSController;
 import tn.eluea.kgpt.ui.UiInteractor;
 import tn.eluea.kgpt.ui.lab.apptrigger.AppTriggerManager;
 
+
 public class KGPTBrain implements InputEventListener, DialogDismissListener {
 
     private long lastConfigReload = 0;
@@ -40,6 +41,7 @@ public class KGPTBrain implements InputEventListener, DialogDismissListener {
     private final SPUpdater mSPUpdater;
     private final AppTriggerManager mAppTriggerManager;
     private final SelectionHandler mSelectionHandler;
+    private Context mAppContext;
 
     private final android.os.Handler mConfigHandler;
     private final android.os.HandlerThread mConfigHandlerThread;
@@ -93,10 +95,11 @@ public class KGPTBrain implements InputEventListener, DialogDismissListener {
         mTextParser.setAppTriggerManager(mAppTriggerManager);
 
         // Initialize Selection Handler for Text Actions
+        mAppContext = context;
         mSelectionHandler = new SelectionHandler(context, this::onTextActionRequested);
 
         // Load inline ask prefix from config
-        loadInlineAskPrefix();
+        loadInlineAskPrefix(context);;
 
         tn.eluea.kgpt.util.Logger.log("KGPTBrain initialized (Refactored)");
         tn.eluea.kgpt.util.Logger.log("XSharedPreferences available: " + XposedConfigReader.isAvailable());
@@ -105,12 +108,18 @@ public class KGPTBrain implements InputEventListener, DialogDismissListener {
     /**
      * Load inline ask prefix from XSharedPreferences
      */
-    private void loadInlineAskPrefix() {
-        String prefix = XposedConfigReader.getString("inline_ask_prefix",
-                tn.eluea.kgpt.instruction.command.InlineAskCommand.DEFAULT_PREFIX);
-        tn.eluea.kgpt.instruction.command.InlineAskCommand.setPrefix(prefix);
-        tn.eluea.kgpt.util.Logger.log("Loaded inline_ask_prefix: " + prefix);
+    
+
+private void loadInlineAskPrefix(Context context) {
+    if (context == null) {
+        tn.eluea.kgpt.util.Logger.log("loadInlineAskPrefix: context null, skip");
+        return;
     }
+    String prefix = tn.eluea.kgpt.provider.ConfigClient.forHook(context).getString("inline_ask_prefix",
+            tn.eluea.kgpt.instruction.command.InlineAskCommand.DEFAULT_PREFIX);
+    tn.eluea.kgpt.instruction.command.InlineAskCommand.setPrefix(prefix);
+    tn.eluea.kgpt.util.Logger.log("Loaded inline_ask_prefix: " + prefix);
+}
 
     /**
      * Periodically reload config from XSharedPreferences to pick up changes
@@ -126,7 +135,7 @@ public class KGPTBrain implements InputEventListener, DialogDismissListener {
                 mAppTriggerManager.reloadTriggers();
             }
             // Reload inline ask prefix
-            loadInlineAskPrefix();
+            loadInlineAskPrefix(mAppContext);
 
             // Rebuild parser/command state when the stored payloads change.
             // Without this, a hooked process that started with a stale or
@@ -162,20 +171,23 @@ public class KGPTBrain implements InputEventListener, DialogDismissListener {
         // Config refresh runs on its own periodic schedule (see constructor);
         // the per-keystroke hot path stays allocation-light.
 
-        IMSController imsController = UiInteractor.getInstance().getIMSController();
-        ParseResult result = mTextParser.parse(text, cursor);
-        if (result != null) {
-            if (result.indexEnd == cursor) {
-                int deleteCount = result.indexEnd - result.indexStart;
+    IMSController imsController = UiInteractor.getInstance().getIMSController();
+    ParseResult result = mTextParser.parse(text, cursor);
+    if (result != null) {
+        // cursor может быть абсолютным, а text — окном до курсора.
+        // Конец совпадения всегда должен быть в конце окна.
+        int windowEnd = Math.min(cursor, text.length());
+        if (result.indexEnd == windowEnd) {
+            int deleteCount = result.indexEnd - result.indexStart;
 
-                imsController.stopNotifyInput();
-                imsController.delete(deleteCount);
-                imsController.startNotifyInput();
+            imsController.stopNotifyInput();
+            imsController.delete(deleteCount);
+            imsController.startNotifyInput();
 
-                processParsedText(text, result);
-            }
+            processParsedText(text, result);
         }
     }
+}
 
     public void processParsedText(String text, ParseResult parseResult) {
         brainDispatcher.dispatch(parseResult);

@@ -93,13 +93,17 @@ public class YouTubeHook {
      * YouTube's own Context — that opened a YouTube-local prefs file and the
      * toggle had no effect inside the hooked process.
      */
-    private static boolean readHookToggle(String key) {
-        try {
-            return tn.eluea.kgpt.provider.XposedConfigReader.getBoolean(key, true);
-        } catch (Throwable t) {
-            return true;
+private static boolean readHookToggle(String key) {
+    try {
+        Context ctx = appContext;
+        if (ctx == null) {
+            return false; // канонический дефолт — пока контекста нет
         }
+        return tn.eluea.kgpt.provider.ConfigClient.forHook(ctx).getBoolean(key, false);
+    } catch (Throwable t) {
+        return false;
     }
+}
 
     private static void log(String msg) {
         Log.i(TAG, msg);

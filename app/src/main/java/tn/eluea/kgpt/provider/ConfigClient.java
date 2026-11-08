@@ -57,6 +57,20 @@ public class ConfigClient {
     private android.content.SharedPreferences remotePrefs = null;
     private long lastRemoteAttempt = 0L;
     private static final long REMOTE_RETRY_MS = 5_000L;
+    
+    private static volatile ConfigClient sHookInstance;
+
+public static ConfigClient forHook(Context context) {
+    ConfigClient inst = sHookInstance;
+    if (inst == null) {
+        synchronized (ConfigClient.class) {
+            if (sHookInstance == null) sHookInstance = new ConfigClient(context);
+            inst = sHookInstance;
+        }
+    }
+    return inst;
+}
+
 
     private android.content.SharedPreferences getRemote() {
         // Retry with throttle: the service may bind (or the module instance

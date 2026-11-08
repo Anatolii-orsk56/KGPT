@@ -148,21 +148,22 @@ public class SettingsFragment extends Fragment {
         return inflater.inflate(R.layout.fragment_settings, container, false);
     }
 
-    @Override
-    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
-        super.onViewCreated(view, savedInstanceState);
-        rootView = view;
-        uiPrefs = requireContext().getSharedPreferences("keyboard_gpt_ui", Context.MODE_PRIVATE);
-        backupManager = new BackupManager(requireContext());
-        logExporter = new LogExporter(requireContext());
-        initViews(view);
-        applyAmoledIfNeeded();
-        applyThemeColors();
-        // applyCandyColorsIfNeeded(); // Removed
-        loadSettings();
-        setupListeners();
-        setupScrollListener();
-    }
+
+@Override
+public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+    super.onViewCreated(view, savedInstanceState);
+    rootView = view;
+    uiPrefs = requireContext().getSharedPreferences("keyboard_gpt_ui", Context.MODE_PRIVATE);
+    backupManager = new BackupManager(requireContext());
+    logExporter = new LogExporter(requireContext());
+    initViews(view);
+    applyAmoledIfNeeded();
+    applyThemeColors();
+    loadSettings();
+    setupListeners();
+    setupScrollListener();
+}
+
 
     private void setupScrollListener() {
         // We will check if rootView is NestedScrollView since it is often the root in
@@ -259,8 +260,13 @@ Runnable saveTextWindow = () -> {
             etTextWindowChars.setText(String.valueOf(uiPrefs.getInt("text_window_chars", 500)));
             return;
         }
-        uiPrefs.edit().putInt("text_window_chars", v).apply();
+        uiPrefs.edit().putInt("text_window_chars", v).apply();          // канал 1: локальные UI-префы
+tn.eluea.kgpt.provider.WorldReadablePrefs.getPrefs(requireContext())
+        .edit().putInt("text_window_chars", v).apply();          // канал 2: world-readable файл
+SPManager.getInstance().getConfigClient().putInt("text_window_chars", v); // ← новый канал
+        Toast.makeText(requireContext(), "Сохранено: " + v, Toast.LENGTH_SHORT).show();
     } catch (NumberFormatException e) {
+        Toast.makeText(requireContext(), "Не число: [" + s + "]", Toast.LENGTH_SHORT).show();
         etTextWindowChars.setText(String.valueOf(uiPrefs.getInt("text_window_chars", 500)));
     }
 };

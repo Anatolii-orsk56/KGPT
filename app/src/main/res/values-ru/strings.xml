@@ -28,6 +28,8 @@
     <string name="blur_tint_color">Цвет оттенка</string>
     <string name="color_saturation">Насыщенность</string>
     <string name="general">Общее</string>
+    <string name="text_window_title">Окно текста</string>
+    <string name="text_window_subtitle">Сколько символов до курсора отдавать модели</string>
     <string name="enable_logging">Включить логирование</string>
     <string name="logging_desc">Отключите для производительности</string>
     <string name="backup_exported">Экспорт успешен</string>
