@@ -74,69 +74,20 @@ public class LanguageSelectionActivity extends AppCompatActivity implements Lang
     }
 
     private List<LanguageItem> getLanguages() {
-        // String array from resources: "English", "العربية (Arabic)", etc.
-        // Or "ar", "en", etc from code?
-        // Let's replicate what was in SettingsFragment
-        String[] languagesArray = getResources().getStringArray(R.array.languages_list);
-        String[] languageCodes = new String[] {
-                "ar", "en", "fr", "es", "de", "it", "ru", "tr", "zh", "ja", "ko", "hi", "pt", "in", "bn", "vi", "th"
-        };
+    List<LanguageItem> items = new ArrayList<>();
+    String currentLangCode = LocaleHelper.getLanguage(this);
 
-        String currentLangCode = LocaleHelper.getLanguage(this);
-        List<LanguageItem> list = new ArrayList<>();
+    items.add(new LanguageItem("en", "English", "", "en".equals(currentLangCode)));
+    items.add(new LanguageItem("ru", "Русский", "Russian", "ru".equals(currentLangCode)));
 
-        for (int i = 0; i < languageCodes.length; i++) {
-            String rawName = (i < languagesArray.length) ? languagesArray[i] : languageCodes[i];
-            // Format: "Native (English)" or just "Native"
-            // Let's parse or just use rawName as Name and Code as Native for simplicity
-            // unless we want more detail
+    return items;
+}
 
-            // Actually, let's create cleaner names
-            String code = languageCodes[i];
-            Locale locale = new Locale(code);
-            String displayName = locale.getDisplayName(locale); // Native name: العربية, English, Español
-            String englishName = locale.getDisplayName(Locale.ENGLISH); // Arabic, English, Spanish
+@Override
+protected void attachBaseContext(android.content.Context newBase) {
+    super.attachBaseContext(LocaleHelper.onAttach(newBase));
+}
 
-            String nameToShow = displayName.substring(0, 1).toUpperCase() + displayName.substring(1);
-            String subName = nameToShow.equals(englishName) ? "" : englishName;
-
-            // Use the rawName from array if needed, but dynamic Locale is cleaner
-            // The array has format: "العربية (Arabic)"
-            String combinedName = (i < languagesArray.length) ? languagesArray[i] : code;
-
-            // Primary name from resources (Curated native name)
-            String primaryName = (i < languagesArray.length) ? languagesArray[i] : code;
-
-            // Clean up if it still has parens (legacy support)
-            if (primaryName.contains("(")) {
-                int start = primaryName.indexOf("(");
-                if (start > 0) {
-                    primaryName = primaryName.substring(0, start).trim();
-                }
-            }
-
-            // Secondary name from Locale (English name)
-            String secondaryName = locale.getDisplayName(Locale.ENGLISH);
-            // Capitalize first letter
-            if (secondaryName.length() > 0) {
-                secondaryName = secondaryName.substring(0, 1).toUpperCase() + secondaryName.substring(1);
-            }
-
-            // If primary (Native) and secondary (English) are roughly the same, KEKK them
-            // both visible
-            // User requested: "even English should be like that" (Native + English below)
-            // So we DO NOT clear secondaryName even if it equals primaryName.
-
-            boolean isSelected = code.equals(currentLangCode);
-            list.add(new LanguageItem(code, primaryName, secondaryName, isSelected));
-        }
-        return list;
-    }
-
-    @Override
-    protected void attachBaseContext(android.content.Context newBase) {
-        super.attachBaseContext(LocaleHelper.onAttach(newBase));
-    }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
