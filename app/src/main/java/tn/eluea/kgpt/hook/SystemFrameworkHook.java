@@ -46,47 +46,12 @@ public class SystemFrameworkHook {
     public static void hook(HookManager hookManager, ClassLoader classLoader) {
         log("Initializing System Framework Core Hooks in system_server...");
 
-        hookWindowBlur(hookManager, classLoader);
         hookMediaSessionService(hookManager, classLoader);
         hookClipboardService(hookManager, classLoader);
     }
 
     private static void log(String msg) {
         Log.d(TAG, msg);
-    }
-
-    // ==================== 1. WINDOW BLUR (AOSP WindowManager) ====================
-
-    private static void hookWindowBlur(HookManager hookManager, ClassLoader classLoader) {
-        try {
-            Class<?> blurListenersClass = classLoader.loadClass("com.android.server.wm.CrossWindowBlurListeners");
-            Method m = blurListenersClass.getDeclaredMethod("isCrossWindowBlurEnabled");
-            MainHook.deoptimizeIfPossible(m); // P2: hot global path — prevent ART inlining
-            hookManager.hook(m, MethodHook.before(param -> param.setResult(true)));
-            log("Hooked CrossWindowBlurListeners.isCrossWindowBlurEnabled -> true");
-        } catch (Throwable t) {
-            log("CrossWindowBlurListeners hook failed: " + t.getMessage());
-        }
-
-        try {
-            Class<?> wmServiceClass = classLoader.loadClass("com.android.server.wm.WindowManagerService");
-            Method m = wmServiceClass.getDeclaredMethod("isCrossWindowBlurEnabled");
-            MainHook.deoptimizeIfPossible(m); // P2: hot global path — prevent ART inlining
-            hookManager.hook(m, MethodHook.before(param -> param.setResult(true)));
-            log("Hooked WindowManagerService.isCrossWindowBlurEnabled -> true");
-        } catch (Throwable t) {
-            log("WindowManagerService hook failed: " + t.getMessage());
-        }
-
-        try {
-            Class<?> clientBlurClass = classLoader.loadClass("android.view.CrossWindowBlurListeners");
-            Method m = clientBlurClass.getDeclaredMethod("isCrossWindowBlurEnabled");
-            MainHook.deoptimizeIfPossible(m); // P2: hot global path — prevent ART inlining
-            hookManager.hook(m, MethodHook.before(param -> param.setResult(true)));
-            log("Hooked android.view.CrossWindowBlurListeners -> true");
-        } catch (Throwable t) {
-            log("android.view.CrossWindowBlurListeners hook failed: " + t.getMessage());
-        }
     }
 
     // ==================== 2. GLOBAL MEDIASESSION (MediaSessionRecord) ====================
