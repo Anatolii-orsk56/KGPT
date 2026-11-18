@@ -15,10 +15,59 @@ public class MaterialYouManager {
     private static MaterialYouManager instance;
     private final SharedPreferences prefs;
 
+    public static final int DEFAULT_SEED_COLOR = 0xFF4285F4;
+
     private static final String PREF_NAME = "material_you_prefs";
     private static final String KEY_USE_WALLPAPER = "use_wallpaper";
     private static final String KEY_SEED_COLOR = "seed_color";
     private static final String KEY_ENABLED = "enabled";
+
+    private static final int[] SEED_OVERLAYS_DARK = {
+        tn.eluea.kgpt.R.style.ThemeOverlay_KGPT_SeedRed_Dark,
+        tn.eluea.kgpt.R.style.ThemeOverlay_KGPT_SeedOrange_Dark,
+        tn.eluea.kgpt.R.style.ThemeOverlay_KGPT_SeedAmber_Dark,
+        tn.eluea.kgpt.R.style.ThemeOverlay_KGPT_SeedYellow_Dark,
+        tn.eluea.kgpt.R.style.ThemeOverlay_KGPT_SeedLime_Dark,
+        tn.eluea.kgpt.R.style.ThemeOverlay_KGPT_SeedGreen_Dark,
+        tn.eluea.kgpt.R.style.ThemeOverlay_KGPT_SeedTeal_Dark,
+        tn.eluea.kgpt.R.style.ThemeOverlay_KGPT_SeedCyan_Dark,
+        tn.eluea.kgpt.R.style.ThemeOverlay_KGPT_SeedBlue_Dark,
+        tn.eluea.kgpt.R.style.ThemeOverlay_KGPT_SeedIndigo_Dark,
+        tn.eluea.kgpt.R.style.ThemeOverlay_KGPT_SeedPurple_Dark,
+        tn.eluea.kgpt.R.style.ThemeOverlay_KGPT_SeedPink_Dark
+    };
+
+    private static final int[] SEED_OVERLAYS_LIGHT = {
+        tn.eluea.kgpt.R.style.ThemeOverlay_KGPT_SeedRed_Light,
+        tn.eluea.kgpt.R.style.ThemeOverlay_KGPT_SeedOrange_Light,
+        tn.eluea.kgpt.R.style.ThemeOverlay_KGPT_SeedAmber_Light,
+        tn.eluea.kgpt.R.style.ThemeOverlay_KGPT_SeedYellow_Light,
+        tn.eluea.kgpt.R.style.ThemeOverlay_KGPT_SeedLime_Light,
+        tn.eluea.kgpt.R.style.ThemeOverlay_KGPT_SeedGreen_Light,
+        tn.eluea.kgpt.R.style.ThemeOverlay_KGPT_SeedTeal_Light,
+        tn.eluea.kgpt.R.style.ThemeOverlay_KGPT_SeedCyan_Light,
+        tn.eluea.kgpt.R.style.ThemeOverlay_KGPT_SeedBlue_Light,
+        tn.eluea.kgpt.R.style.ThemeOverlay_KGPT_SeedIndigo_Light,
+        tn.eluea.kgpt.R.style.ThemeOverlay_KGPT_SeedPurple_Light,
+        tn.eluea.kgpt.R.style.ThemeOverlay_KGPT_SeedPink_Light
+    };
+
+    private static boolean isNight(android.content.Context c) {
+        int mask = c.getResources().getConfiguration().uiMode
+                & android.content.res.Configuration.UI_MODE_NIGHT_MASK;
+        return mask == android.content.res.Configuration.UI_MODE_NIGHT_YES;
+    }
+
+    private static int nearestSeedIndex(int color) {
+        float[] hsv = new float[3];
+        android.graphics.Color.colorToHSV(color, hsv);
+        return Math.round(hsv[0] / 30f) % 12;
+    }
+
+    private static int nearestSeedOverlay(int color, boolean night) {
+        int i = nearestSeedIndex(color);
+        return (night ? SEED_OVERLAYS_DARK : SEED_OVERLAYS_LIGHT)[i];
+    }
 
     private MaterialYouManager(Context context) {
         this.prefs = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
@@ -34,18 +83,26 @@ public class MaterialYouManager {
     public Context wrapContext(Context baseContext) {
         Context context = baseContext;
         if (isMaterialYouEnabled()) {
-            if (isUseWallpaperSource()) {
-                context = DynamicColors.wrapContextIfAvailable(baseContext);
-            } else {
-                // Use custom seed color for context wrapping
-                try {
-                    com.google.android.material.color.DynamicColorsOptions options = new com.google.android.material.color.DynamicColorsOptions.Builder()
-                            .setContentBasedSource(getSeedColor())
-                            .build();
-                    context = DynamicColors.wrapContextIfAvailable(baseContext, options);
-                } catch (NoClassDefFoundError | NoSuchMethodError e) {
-                    // Fallback for older versions
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S) {
+                if (isUseWallpaperSource()) {
                     context = DynamicColors.wrapContextIfAvailable(baseContext);
+                } else {
+                    // Use custom seed color for context wrapping
+                    try {
+                        com.google.android.material.color.DynamicColorsOptions options = new com.google.android.material.color.DynamicColorsOptions.Builder()
+                                .setContentBasedSource(getSeedColor())
+                                .build();
+                        context = DynamicColors.wrapContextIfAvailable(baseContext, options);
+                    } catch (NoClassDefFoundError | NoSuchMethodError e) {
+                        // Fallback for older versions
+                        context = DynamicColors.wrapContextIfAvailable(baseContext);
+                    }
+                }
+            } else {
+                // API < 31 fallback: wrap context with nearest seed overlay if custom seed is used
+                if (!isUseWallpaperSource()) {
+                    context = new android.view.ContextThemeWrapper(baseContext,
+                            nearestSeedOverlay(getSeedColor(), isNight(baseContext)));
                 }
             }
         }
@@ -66,7 +123,7 @@ public class MaterialYouManager {
     }
 
     public int getSeedColor() {
-        return prefs.getInt(KEY_SEED_COLOR, 0xFF4285F4); // Default seed (Blue)
+        return prefs.getInt(KEY_SEED_COLOR, DEFAULT_SEED_COLOR);
     }
 
     public void setSeedColor(int color) {
@@ -87,21 +144,24 @@ public class MaterialYouManager {
 
     public void applyTheme(android.app.Activity activity) {
         if (isMaterialYouEnabled()) {
-            if (isUseWallpaperSource()) {
-                DynamicColors.applyToActivityIfAvailable(activity);
-            } else {
-                // For custom seed color, we normally use DynamicColorsOptions.
-                // But to keep it simple and compile-safe without checking library version,
-                // we'll primarily rely on the basic availability check or just apply it.
-                // If custom seed logic is needed and library supports it:
-                try {
-                    com.google.android.material.color.DynamicColorsOptions options = new com.google.android.material.color.DynamicColorsOptions.Builder()
-                            .setContentBasedSource(getSeedColor())
-                            .build();
-                    DynamicColors.applyToActivityIfAvailable(activity, options);
-                } catch (NoClassDefFoundError | NoSuchMethodError e) {
-                    // Fallback for older versions
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S) {
+                if (isUseWallpaperSource()) {
                     DynamicColors.applyToActivityIfAvailable(activity);
+                } else {
+                    try {
+                        com.google.android.material.color.DynamicColorsOptions options = new com.google.android.material.color.DynamicColorsOptions.Builder()
+                                .setContentBasedSource(getSeedColor())
+                                .build();
+                        DynamicColors.applyToActivityIfAvailable(activity, options);
+                    } catch (NoClassDefFoundError | NoSuchMethodError e) {
+                        DynamicColors.applyToActivityIfAvailable(activity);
+                    }
+                }
+            } else {
+                // API < 31 fallback: apply nearest seed overlay if custom seed is used
+                if (!isUseWallpaperSource()) {
+                    activity.getTheme().applyStyle(
+                            nearestSeedOverlay(getSeedColor(), isNight(activity)), true);
                 }
             }
         }
@@ -125,5 +185,9 @@ public class MaterialYouManager {
         if (isNightModeEnv && isAmoled) {
             activity.getTheme().applyStyle(tn.eluea.kgpt.R.style.ThemeOverlay_KGPT_AMOLED, true);
         }
+    }
+
+    public void setMaterialYouEnabled(boolean enabled) {
+    prefs.edit().putBoolean(KEY_ENABLED, enabled).apply();
     }
 }
