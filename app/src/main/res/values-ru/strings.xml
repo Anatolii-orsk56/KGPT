@@ -19,13 +19,7 @@
     <string name="enter_api_key">Введите API ключ</string>
     <string name="save">Сохранить</string>
     <string name="dark_mode">Темная тема</string>
-    <string name="follow_system">Системная тема</string>
-    <string name="blur_control">Управление размытием</string>
-    <string name="blur_control_desc">Настройка размытия фона</string>
-    <string name="blur_enabled">Включить размытие</string>
-    <string name="blur_enabled_desc">Эффект размытия за окнами</string>
-    <string name="blur_intensity">Интенсивность</string>
-    <string name="blur_tint_color">Цвет оттенка</string>
+    <string name="follow_system">Основная тема приложения</string>
     <string name="color_saturation">Насыщенность</string>
     <string name="general">Общее</string>
     <string name="text_window_title">Окно текста</string>
@@ -138,8 +132,6 @@
     <string name="option_ai_model_desc">Настройки модели</string>
     <string name="option_appearance">Внешний вид</string>
     <string name="option_appearance_desc">Темы и цвета</string>
-    <string name="option_blur">Размытие</string>
-    <string name="option_blur_desc">Настройки эффекта Blur</string>
     <string name="option_general">Общее</string>
     <string name="option_general_desc">Логи и сеть</string>
     <string name="option_app_triggers">Триггеры приложений</string>
@@ -234,7 +226,7 @@
     <string name="placeholder_description">Описание</string>
     <string name="placeholder_action">Действие</string>
     <string name="version_placeholder">v4.0.0</string>
-    <string name="tag_stable">Стабильно</string>
+    <string name="tag_stable">by Anatolii-orsk56</string>
     <string name="commands_patterns_desc">Команды и паттерны</string>
     <string name="section_information">Информация</string>
     <string name="sub_model_desc">Пресет или пользовательская</string>
@@ -244,7 +236,6 @@
     <string name="desc_enable_app_triggers">Ключ. слово -> Открыть App</string>
     <string name="msg_no_triggers">Нет триггеров.</string>
     <string name="guide_triggers_usage">• Слово открывает приложение\n• Нажмите для изменения</string>
-    <string name="material_you_blur">Material You Blur</string>
     <string name="use_dynamic_app_colors">Динамические цвета</string>
     <string name="reset_settings">Сброс настроек</string>
     <string name="performance_tip">Производительность</string>
@@ -258,7 +249,7 @@
     <string name="text_actions_intro">Умные действия. Выделите текст.</string>
     <string name="coming_soon">Скоро...</string>
     <string name="title_material_you">Material You</string>
-    <string name="desc_material_you">Настройка цветов</string>
+    <string name="desc_material_you">Выбор акцентного цвета</string>
     <string name="use_wallpaper_colors">Цвета обоев</string>
     <string name="extract_wallpaper_colors">Извлечь</string>
     <string name="seed_color">Базовый цвет</string>
@@ -313,7 +304,7 @@
     <string name="desc_settings_restore">Загрузить данные</string>
     <string name="support_group">Группа поддержки</string>
     <string name="title_export_logs">Экспорт логов</string>
-    <string name="desc_export_logs">Для дебага</string>
+    <string name="desc_export_logs">Для отладки</string>
     <string name="title_updates">Обновления</string>
     <string name="desc_updates_config">Проверка обновлений</string>
     <string name="open_in_browser">Открыть в браузере</string>
@@ -341,9 +332,9 @@
     <string name="privacy_notice_desc">Ключи хранятся локально.</string>
     <string name="settings_appearance">Внешний вид</string>
     <string name="material_you_title">AMOLED Черный</string>
-    <string name="material_you_desc">Для OLED</string>
-    <string name="provider_title">Внешний повайдер</string>
-    <string name="provider_desc">Дополнение чата</string>
+    <string name="material_you_desc">Для OLED дисплеев</string>
+    <string name="provider_title">External Internet Service</string>
+    <string name="provider_desc">Выключить, если чат не работает</string>
     <string name="about_settings">О приложении</string>
     <string name="changelog">Чейнжлог</string>
     <string name="action_settings">Настройки</string>
@@ -452,8 +443,8 @@
     <string name="dialog_title_config_model">Настройка %1$s</string>
     <string name="setting_enable_logging">Включить логирование</string>
     <string name="setting_desc_enable_logging">Отключите для производительности. Вы не сможете сообщать об ошибках.</string>
-    <string name="setting_external_internet">Использовать внешний интернет</string>
-    <string name="setting_desc_external_internet">Рекомендуется, если чат не работает.</string>
+    <string name="setting_external_internet">Использовать внешний интернет-сервис</string>
+    <string name="setting_desc_external_internet">Держите включённым; отключайте, только если чат не работает.</string>
     <string name="setting_search_engine">Поисковая система</string>
     <string name="setting_desc_search_engine">Поисковая система по умолчанию.</string>
     <string name="setting_material_you">Включить Material You</string>

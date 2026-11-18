@@ -37,6 +37,7 @@ import tn.eluea.kgpt.llm.LanguageModel;
 import tn.eluea.kgpt.provider.ConfigClient;
 import tn.eluea.kgpt.settings.OtherSettingsType;
 import tn.eluea.kgpt.features.textactions.domain.TextAction;
+import tn.eluea.kgpt.util.MaterialYouManager;
 
 public class BackupManager {
 
@@ -52,10 +53,6 @@ public class BackupManager {
     private static final String KEY_MATERIAL_YOU_USE_WALLPAPER = "material_you_use_wallpaper";
     private static final String KEY_MATERIAL_YOU_SEED_COLOR = "material_you_seed_color";
     private static final String KEY_MATERIAL_YOU_SINGLE_TONE = "material_you_single_tone";
-    private static final String KEY_BLUR_ENABLED = "blur_enabled";
-    private static final String KEY_BLUR_MATERIAL_YOU = "blur_material_you";
-    private static final String KEY_BLUR_INTENSITY = "blur_intensity";
-    private static final String KEY_BLUR_TINT_COLOR = "blur_tint_color";
     private static final String KEY_SEARCH_ENGINE = "search_engine";
     private static final String KEY_ENABLE_LOGS = "enable_logs";
     private static final String KEY_EXTERNAL_INTERNET = "external_internet";
@@ -139,22 +136,14 @@ public class BackupManager {
             backup.put(KEY_THEME, uiPrefs.getBoolean("theme_mode", false));
             backup.put(KEY_AMOLED, uiPrefs.getBoolean("amoled_mode", false));
             backup.put(KEY_MATERIAL_YOU_ENABLED,
-                    (Boolean) spManager.getOtherSetting(OtherSettingsType.MaterialYouEnabled));
+                    MaterialYouManager.getInstance(context).isMaterialYouEnabled());
             backup.put(KEY_MATERIAL_YOU_USE_WALLPAPER,
-                    (Boolean) spManager.getOtherSetting(OtherSettingsType.MaterialYouUseWallpaper));
+                    MaterialYouManager.getInstance(context).isUseWallpaperSource());
             backup.put(KEY_MATERIAL_YOU_SEED_COLOR,
-                    (Integer) spManager.getOtherSetting(OtherSettingsType.MaterialYouSeedColor));
+                    MaterialYouManager.getInstance(context).getSeedColor());
             backup.put(KEY_MATERIAL_YOU_SINGLE_TONE,
                     (Boolean) spManager.getOtherSetting(OtherSettingsType.MaterialYouSingleTone));
             includedSections.put(BackupOptions.Option.APPEARANCE.key);
-        }
-
-        if (options.isSelected(BackupOptions.Option.BLUR_SETTINGS)) {
-            backup.put(KEY_BLUR_ENABLED, uiPrefs.getBoolean("blur_enabled", true));
-            backup.put(KEY_BLUR_MATERIAL_YOU, uiPrefs.getBoolean("material_you_blur", false));
-            backup.put(KEY_BLUR_INTENSITY, uiPrefs.getInt("blur_intensity", 25));
-            backup.put(KEY_BLUR_TINT_COLOR, uiPrefs.getInt("blur_tint_color", 0));
-            includedSections.put(BackupOptions.Option.BLUR_SETTINGS.key);
         }
 
         if (options.isSelected(BackupOptions.Option.GENERAL_SETTINGS)) {
@@ -226,8 +215,6 @@ public class BackupManager {
                     availableOptions.add(BackupOptions.Option.LANGUAGE_MODEL);
                 if (backup.has(KEY_THEME) || backup.has(KEY_AMOLED))
                     availableOptions.add(BackupOptions.Option.APPEARANCE);
-                if (backup.has(KEY_BLUR_ENABLED))
-                    availableOptions.add(BackupOptions.Option.BLUR_SETTINGS);
                 if (backup.has(KEY_SEARCH_ENGINE) || backup.has(KEY_ENABLE_LOGS))
                     availableOptions.add(BackupOptions.Option.GENERAL_SETTINGS);
                 if (backup.has(KEY_APP_TRIGGERS) || backup.has(KEY_APP_TRIGGERS_ENABLED))
@@ -360,32 +347,6 @@ public class BackupManager {
                 if (restored) {
                     restoredCount++;
                     restoredItems.add("Appearance");
-                }
-            }
-
-            if (options.isSelected(BackupOptions.Option.BLUR_SETTINGS)) {
-                boolean restored = false;
-                SharedPreferences.Editor editor = uiPrefs.edit();
-                if (backup.has(KEY_BLUR_ENABLED)) {
-                    editor.putBoolean("blur_enabled", backup.getBoolean(KEY_BLUR_ENABLED));
-                    restored = true;
-                }
-                if (backup.has(KEY_BLUR_MATERIAL_YOU)) {
-                    editor.putBoolean("material_you_blur", backup.getBoolean(KEY_BLUR_MATERIAL_YOU));
-                    restored = true;
-                }
-                if (backup.has(KEY_BLUR_INTENSITY)) {
-                    editor.putInt("blur_intensity", backup.getInt(KEY_BLUR_INTENSITY));
-                    restored = true;
-                }
-                if (backup.has(KEY_BLUR_TINT_COLOR)) {
-                    editor.putInt("blur_tint_color", backup.getInt(KEY_BLUR_TINT_COLOR));
-                    restored = true;
-                }
-                editor.apply();
-                if (restored) {
-                    restoredCount++;
-                    restoredItems.add("Blur Settings");
                 }
             }
 

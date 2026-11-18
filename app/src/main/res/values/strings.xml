@@ -26,12 +26,6 @@
     <string name="save">Save</string>
     <string name="dark_mode">Dark Mode</string>
     <string name="follow_system">Follow system theme</string>
-    <string name="blur_control">Blur Control</string>
-    <string name="blur_control_desc">Control of the app blur</string>
-    <string name="blur_enabled">Enable Window Blur</string>
-    <string name="blur_enabled_desc">Apply blur behind floating dialogs</string>
-    <string name="blur_intensity">Blur Intensity</string>
-    <string name="blur_tint_color">Blur Tint Color</string>
     <string name="color_saturation">Color Saturation</string>
     <string name="general">General</string>
     <string name="text_window_title">Text Window</string>
@@ -145,8 +139,6 @@
     <string name="option_ai_model_desc">Selected model and sub-models</string>
     <string name="option_appearance">Appearance</string>
     <string name="option_appearance_desc">Theme, AMOLED, Material You</string>
-    <string name="option_blur">Blur Settings</string>
-    <string name="option_blur_desc">Blur intensity and tint color</string>
     <string name="option_general">General Settings</string>
     <string name="option_general_desc">Logging, internet, search engine</string>
     <string name="option_app_triggers">App Triggers (LAB)</string>
@@ -245,7 +237,7 @@
     <string name="placeholder_description">Description</string>
     <string name="placeholder_action">Action</string>
     <string name="version_placeholder">v4.0.0</string>
-    <string name="tag_stable">STABLE</string>
+    <string name="tag_stable">by Anatolii-orsk56</string>
     <string name="commands_patterns_desc">Commands &amp; patterns</string>
     <string name="section_information">Information</string>
     <string name="sub_model_desc">Select a preset or enter custom</string>
@@ -255,7 +247,6 @@
     <string name="desc_enable_app_triggers">Type trigger word to launch apps</string>
     <string name="msg_no_triggers">No app triggers added yet.\nTap the button above to add one.</string>
     <string name="guide_triggers_usage">• Type the trigger word → App opens automatically\n• Tap on app card to edit or delete</string>
-    <string name="material_you_blur">Material You Blur</string>
     <string name="use_dynamic_app_colors">Automatically use dynamic app colors</string>
     <string name="reset_settings">Reset Settings</string>
     <string name="performance_tip">Performance Tip</string>
