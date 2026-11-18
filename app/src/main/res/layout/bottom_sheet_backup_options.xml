@@ -269,48 +269,6 @@
                 </LinearLayout>
             </LinearLayout>
 
-            <!-- Blur Settings -->
-            <LinearLayout
-                android:id="@+id/option_blur"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:background="@drawable/ripple_settings_item"
-                android:gravity="center_vertical"
-                android:orientation="horizontal"
-                android:paddingVertical="10dp"
-                android:paddingHorizontal="4dp">
-
-                <CheckBox
-                    android:id="@+id/cb_blur"
-                    android:layout_width="24dp"
-                    android:layout_height="24dp"
-                    android:checked="true"
-                    android:button="@drawable/animated_checkbox_circle"
-                    android:background="@null" />
-
-                <LinearLayout
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="12dp"
-                    android:layout_weight="1"
-                    android:orientation="vertical">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/option_blur"
-                        android:textColor="?attr/colorOnSurface"
-                        android:textSize="14sp" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/option_blur_desc"
-                        android:textColor="?attr/colorOnSurfaceVariant"
-                        android:textSize="11sp" />
-                </LinearLayout>
-            </LinearLayout>
-
             <!-- General Settings -->
             <LinearLayout
                 android:id="@+id/option_general"

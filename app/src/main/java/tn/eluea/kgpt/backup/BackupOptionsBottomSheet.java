@@ -138,7 +138,6 @@ public class BackupOptionsBottomSheet {
         setupCheckbox(view, R.id.cb_patterns, R.id.option_patterns, BackupOptions.Option.PATTERNS);
         setupCheckbox(view, R.id.cb_model, R.id.option_model, BackupOptions.Option.LANGUAGE_MODEL);
         setupCheckbox(view, R.id.cb_appearance, R.id.option_appearance, BackupOptions.Option.APPEARANCE);
-        setupCheckbox(view, R.id.cb_blur, R.id.option_blur, BackupOptions.Option.BLUR_SETTINGS);
         setupCheckbox(view, R.id.cb_general, R.id.option_general, BackupOptions.Option.GENERAL_SETTINGS);
         setupCheckbox(view, R.id.cb_app_triggers, R.id.option_app_triggers, BackupOptions.Option.APP_TRIGGERS);
         setupCheckbox(view, R.id.cb_text_actions, R.id.option_text_actions, BackupOptions.Option.TEXT_ACTIONS);

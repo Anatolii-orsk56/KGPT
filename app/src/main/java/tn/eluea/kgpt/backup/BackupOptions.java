@@ -32,7 +32,6 @@ public class BackupOptions {
         PATTERNS("patterns", "Trigger Patterns"),
         LANGUAGE_MODEL("language_model", "AI Model Settings"),
         APPEARANCE("appearance", "Appearance"),
-        BLUR_SETTINGS("blur_settings", "Blur Settings"),
         GENERAL_SETTINGS("general_settings", "General Settings"),
         APP_TRIGGERS("app_triggers", "App Triggers (LAB)"),
         TEXT_ACTIONS("text_actions", "Text Actions (LAB)"),
