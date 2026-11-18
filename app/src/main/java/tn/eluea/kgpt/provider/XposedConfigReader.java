@@ -12,6 +12,7 @@ import java.io.File;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 /**
  * Modern Config Reader with dynamic XSharedPreferences reflection fallback.
@@ -20,12 +21,15 @@ public class XposedConfigReader {
     private static final String TAG = "KGPT_XposedConfig";
     private static final String KGPT_PACKAGE = "tn.eluea.kgpt";
     private static final String PREF_NAME = "keyboard_gpt";
-    
-    private static final String MIRROR_DIR =
+
+    // Каталог LSPosed меняется от устройства к устройству: UUID генерируется
+    // при установке LSPosed и общий для всех модулей (/data/misc/<UUID>/prefs/<package>/).
+    // Поэтому путь ищем динамически, а старый захардкоженный оставляем как fallback.
+    private static final String LEGACY_MIRROR_DIR =
         "/data/misc/1c91858f-5536-4f19-a481-80701e1e7a8d/prefs/" + KGPT_PACKAGE;
-    
-    private static final String DBG_PATH =
-        "/sdcard/Android/data/org.futo.inputmethod.latin/files/kgpt_debug.log";
+
+    private static final Pattern UUID_PATTERN = Pattern.compile(
+        "[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}");
 
     private static Object xPrefs = null;
     private static boolean prefsAvailable = false;
@@ -34,12 +38,53 @@ public class XposedConfigReader {
     private static long lastReload = 0;
     private static final long RELOAD_INTERVAL = 1000;
 
+    private static volatile File cachedMirrorDir;
+    private static boolean mirrorDirResolved = false;
+
     private static Method reloadMethod;
     private static Method getStringMethod;
     private static Method getBooleanMethod;
     private static Method getIntMethod;
     private static Method getFileMethod;
-    
+
+    /**
+     * Находит зеркальный каталог префов LSPosed для KGPT.
+     * Каталог появляется только после активации модуля в LSPosed Manager и
+     * перезагрузки, поэтому до этого момента вернёт fallback-путь или null.
+     */
+    private static synchronized File getMirrorDir() {
+        if (mirrorDirResolved && cachedMirrorDir != null) return cachedMirrorDir;
+
+        String[] roots = { "/data/misc/apexdata", "/data/misc" };
+        for (String rootPath : roots) {
+            File root = new File(rootPath);
+            String[] entries = root.list();
+            if (entries == null) continue; // нет доступа к корню — пробуем следующий
+
+            for (String name : entries) {
+                if (!UUID_PATTERN.matcher(name).matches()) continue;
+                File prefFile = new File(root,
+                        name + "/prefs/" + KGPT_PACKAGE + "/" + PREF_NAME + ".xml");
+                if (prefFile.isFile()) {
+                    cachedMirrorDir = new File(root, name + "/prefs/" + KGPT_PACKAGE);
+                    mirrorDirResolved = true;
+                    dbg("mirror dir resolved: " + cachedMirrorDir.getAbsolutePath());
+                    return cachedMirrorDir;
+                }
+            }
+        }
+        // Не нашли — на своём устройстве поможет legacy-путь, на чужом вернём null
+        File legacy = new File(LEGACY_MIRROR_DIR);
+        File legacyFile = new File(legacy, PREF_NAME + ".xml");
+        if (legacyFile.isFile()) {
+            cachedMirrorDir = legacy;
+            mirrorDirResolved = true;
+            dbg("mirror dir resolved via legacy path");
+            return legacy;
+        }
+        dbg("mirror dir not found yet (module not activated or no LSPosed)");
+        return null;
+    }
 
 private static synchronized void initPrefs() {
     if (initialized) {
@@ -48,12 +93,12 @@ private static synchronized void initPrefs() {
     initialized = true;
 
     try {
- Class<?> xPrefsClass = Class.forName("de.robv.android.xposed.XSharedPreferences");
-reloadMethod = xPrefsClass.getMethod("reload");
-getStringMethod = xPrefsClass.getMethod("getString", String.class, String.class);
-getBooleanMethod = xPrefsClass.getMethod("getBoolean", String.class, boolean.class);
-getIntMethod = xPrefsClass.getMethod("getInt", String.class, int.class);
-getFileMethod = xPrefsClass.getMethod("getFile");
+        Class<?> xPrefsClass = Class.forName("de.robv.android.xposed.XSharedPreferences");
+        reloadMethod = xPrefsClass.getMethod("reload");
+        getStringMethod = xPrefsClass.getMethod("getString", String.class, String.class);
+        getBooleanMethod = xPrefsClass.getMethod("getBoolean", String.class, boolean.class);
+        getIntMethod = xPrefsClass.getMethod("getInt", String.class, int.class);
+        getFileMethod = xPrefsClass.getMethod("getFile");
 
         xPrefs = xPrefsClass.getConstructor(String.class, String.class)
                 .newInstance(KGPT_PACKAGE, PREF_NAME);
@@ -71,22 +116,28 @@ getFileMethod = xPrefsClass.getMethod("getFile");
             dbg("XSP file not readable, prefsAvailable=false");
         }
     } catch (Throwable e) {
-    prefsAvailable = false;
-    dbg("XSP init FAILED: " + e + " — switching to direct file read");
+        prefsAvailable = false;
+        dbg("XSP init FAILED: " + e + " — switching to direct file read");
     }
-    try {
-    File f = new File(MIRROR_DIR, PREF_NAME + ".xml");
-    dbg("fallback file=" + f.getAbsolutePath() + " canRead=" + f.canRead());
-    if (f.canRead()) {
-        parseXmlIntoCache(new String(java.nio.file.Files.readAllBytes(f.toPath())));
-        prefsAvailable = true;
-        dbg("fallback OK, keys=" + cache.size());
+
+    // Direct file read: только если XSP-канал не заработал
+    if (!prefsAvailable) {
+        try {
+            File dir = getMirrorDir();
+            File f = (dir != null) ? new File(dir, PREF_NAME + ".xml") : null;
+            dbg("fallback file=" + (f != null ? f.getAbsolutePath() : "null")
+                    + " canRead=" + (f != null && f.canRead()));
+            if (f != null && f.canRead()) {
+                parseXmlIntoCache(new String(java.nio.file.Files.readAllBytes(f.toPath())));
+                prefsAvailable = true;
+                dbg("fallback OK, keys=" + cache.size());
+            }
+        } catch (Throwable e) {
+            dbg("fallback FAILED: " + e);
+        }
     }
-} catch (Throwable e) {
-    dbg("fallback FAILED: " + e);
 }
-}
-    
+
 private static void reloadIfNeeded() {
     if (!prefsAvailable) return;
 
@@ -107,13 +158,15 @@ private static void reloadIfNeeded() {
     } else {
         // fallback: перечитываем зеркальный XML напрямую
         try {
-            File f = new File(MIRROR_DIR, PREF_NAME + ".xml");
-            if (f.canRead()) {
+            File dir = getMirrorDir();
+            File f = (dir != null) ? new File(dir, PREF_NAME + ".xml") : null;
+            if (f != null && f.canRead()) {
                 parseXmlIntoCache(new String(
                         java.nio.file.Files.readAllBytes(f.toPath())));
                 dbg("fallback reloaded, keys=" + cache.size());
             } else {
-                dbg("fallback reload: file not readable: " + f.getAbsolutePath());
+                dbg("fallback reload: file not readable: "
+                        + (f != null ? f.getAbsolutePath() : "null"));
             }
         } catch (Throwable e) {
             dbg("fallback reload FAILED: " + e);
@@ -125,8 +178,8 @@ private static void reloadIfNeeded() {
     lastReload = now;
 
 }
-    
-    private static void parseXmlIntoCache(String xml) {
+
+private static void parseXmlIntoCache(String xml) {
     cache.clear();
     java.util.regex.Matcher mi = java.util.regex.Pattern
             .compile("<int name=\"([^\"]+)\" value=\"(-?\\d+)\"").matcher(xml);
@@ -138,19 +191,12 @@ private static void reloadIfNeeded() {
             .compile("<string name=\"([^\"]+)\">([^<]*)</string>").matcher(xml);
     while (ms.find()) cache.put(ms.group(1), ms.group(2));
 }
-    
-    private static void dbg(String s) {
-    try {
-        File f = new File(DBG_PATH);
-        f.getParentFile().mkdirs();
-        try (java.io.FileWriter w = new java.io.FileWriter(f, true)) {
-            w.append(new java.text.SimpleDateFormat("MM-dd HH:mm:ss", java.util.Locale.US)
-                    .format(new java.util.Date()))
-             .append(" XSP: ").append(s).append("\n");
-        }
-    } catch (Throwable t) { /* игнорируем: лог не должен ломать хук */ }
+
+private static void dbg(String s) {
+    // Лог только в logcat: никаких записей в чужие приложения на /sdcard
+    Log.d("KGPT-XSP", s);
 }
-    
+
     public static void forceReload() {
         if (xPrefs == null) {
             initPrefs();
@@ -188,7 +234,7 @@ private static void reloadIfNeeded() {
         }
         return defaultValue;
     }
-    
+
     public static boolean getBoolean(String key, boolean defaultValue) {
         initPrefs();
         if (!prefsAvailable || xPrefs == null || getBooleanMethod == null) {
@@ -212,7 +258,7 @@ private static void reloadIfNeeded() {
         }
         return defaultValue;
     }
-    
+
 public static int getInt(String key, int defaultValue) {
     initPrefs();
     if (!prefsAvailable) {
@@ -248,8 +294,6 @@ public static int getInt(String key, int defaultValue) {
     return defaultValue;
 }
 
-
-    
     public static synchronized boolean isAvailable() {
         initPrefs();
         return prefsAvailable;
@@ -259,7 +303,7 @@ public static int getInt(String key, int defaultValue) {
         initPrefs();
         return "XSharedPreferences available: " + prefsAvailable;
     }
-    
+
     public static void clearCache() {
         cache.clear();
         lastReload = 0;
