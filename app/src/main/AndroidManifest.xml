@@ -90,11 +90,6 @@
             android:exported="false" />
 
         <activity
-            android:name=".ui.settings.BlurControlActivity"
-            android:theme="@style/Theme.KGPT"
-            android:exported="false" />
-
-        <activity
             android:name=".ui.settings.MaterialYouSettingsActivity"
             android:theme="@style/Theme.KGPT"
             android:exported="false" />

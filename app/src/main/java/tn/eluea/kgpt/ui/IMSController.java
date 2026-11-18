@@ -45,7 +45,7 @@ private int textWindowChars() {
 int v = tn.eluea.kgpt.provider.ConfigClient.forHook(imsRef)
         .getInt("text_window_chars", DEFAULT_TEXT_WINDOW_CHARS);
 
-    return Math.max(50, Math.min(v, 2000));
+    return Math.max(50, Math.min(v, 5000));
 }
 
     //...
@@ -111,22 +111,12 @@ public void onUpdateSelection(int oldSelStart,
             }
         }
 
-if (beforeCursor != null) {
-    typedText = beforeCursor.toString();
-    cursor = newSelEnd;
-    notifyTextUpdate();
-    try {
-        java.io.File f = new java.io.File(
-                ims.getExternalFilesDir(null), "kgpt_debug.log");
-        java.io.FileWriter fw = new java.io.FileWriter(f, true);
-        fw.append("selEnd=" + newSelEnd
-                + " win=" + beforeCursor.length()
-                + " path=" + (typedText.length() == newSelEnd ? "full" : "window")
-                + " tail=[" + typedText.substring(Math.max(0, typedText.length() - 20))
-                + "]\n");
-        fw.close();
-    } catch (Throwable ignored) {}
-}
+        if (beforeCursor != null) {
+            typedText = beforeCursor.toString();
+            cursor = newSelEnd;
+            notifyTextUpdate();
+
+        }
     }
 }
 

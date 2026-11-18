@@ -89,11 +89,6 @@
 
 
                 <!-- Divider -->
-                <View
-                    android:layout_width="match_parent"
-                    android:layout_height="1dp"
-                    android:layout_marginVertical="12dp"
-                    android:background="?attr/colorOutlineVariant" />
 
 <!-- Dark Mode -->
 <LinearLayout
@@ -140,6 +135,12 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content" />
 </LinearLayout>
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:layout_marginVertical="12dp"
+                    android:background="?attr/colorOutlineVariant" />
 
                 <!-- AMOLED Mode -->
                 <LinearLayout
@@ -236,60 +237,6 @@
                         android:id="@+id/switch_winter_mode"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content" />
-                </LinearLayout>
-
-                <View
-                    android:layout_width="match_parent"
-                    android:layout_height="1dp"
-                    android:layout_marginVertical="16dp"
-                    android:background="?attr/colorOutlineVariant" />
-
-                <!-- Blur Control -->
-                <LinearLayout
-                    android:id="@+id/btn_blur_control"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:background="@drawable/ripple_settings_item"
-                    android:gravity="center_vertical"
-                    android:orientation="horizontal"
-                    android:padding="12dp"
-                    android:clickable="true"
-                    android:focusable="true">
-
-                    <ImageView
-                        android:id="@+id/icon_blur"
-                        android:layout_width="24dp"
-                        android:layout_height="24dp"
-                        android:src="@drawable/ic_blur_circle_filled" 
-                        app:tint="?attr/colorPrimary" />
-
-                    <LinearLayout
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_marginStart="16dp"
-                        android:layout_weight="1"
-                        android:orientation="vertical">
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="@string/blur_control"
-                            android:textAppearance="?attr/textAppearanceBodyLarge"
-                            android:textColor="?attr/colorOnSurface" />
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="@string/blur_control_desc"
-                            android:textColor="?attr/colorOnSurfaceVariant"
-                            android:textSize="12sp" />
-                    </LinearLayout>
-
-                    <ImageView
-                        android:layout_width="24dp"
-                        android:layout_height="24dp"
-                        android:src="@drawable/ic_arrow_right_filled"
-                        app:tint="?attr/colorPrimary" />
                 </LinearLayout>
 
                 <View
@@ -856,41 +803,6 @@
                     android:maxLines="1"
                     android:ellipsize="end" />
 
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btn_telegram_support"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="20dp"
-                    android:paddingVertical="12dp"
-                    android:text="@string/support_group"
-                    android:textColor="?attr/colorOnPrimary"
-                    android:textSize="14sp"
-                    android:textStyle="bold"
-                    app:backgroundTint="?attr/colorPrimary"
-                    app:cornerRadius="12dp"
-                    app:icon="@drawable/ic_telegram"
-                    app:iconGravity="textStart"
-                    app:iconPadding="8dp"
-                    app:iconSize="20dp"
-                    app:iconTint="?attr/colorOnPrimary" />
-
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btn_changelog"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
-                    android:paddingVertical="12dp"
-                    android:text="@string/changelog"
-                    android:textColor="?attr/colorOnSecondary"
-                    android:textSize="14sp"
-                    android:textStyle="bold"
-                    app:backgroundTint="?attr/colorSecondary"
-                    app:cornerRadius="12dp"
-                    app:icon="@drawable/ic_document_code_filled"
-                    app:iconGravity="textStart"
-                    app:iconPadding="8dp"
-                    app:iconSize="20dp"
-                    app:iconTint="?attr/colorOnSecondary" />
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 

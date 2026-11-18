@@ -8,6 +8,7 @@
 package tn.eluea.kgpt.settings;
 
 import tn.eluea.kgpt.R;
+import tn.eluea.kgpt.util.MaterialYouManager;
 
 public enum OtherSettingsType {
         EnableLogs(R.string.setting_enable_logging, R.string.setting_desc_enable_logging,
@@ -22,7 +23,7 @@ public enum OtherSettingsType {
         MaterialYouUseWallpaper(R.string.setting_wallpaper_colors, R.string.setting_desc_wallpaper_colors,
                         Nature.Boolean, true),
         MaterialYouSeedColor(R.string.setting_seed_color, R.string.setting_desc_seed_color,
-                        Nature.Integer, 0xFF2196F3),
+                        Nature.Integer, MaterialYouManager.DEFAULT_SEED_COLOR),
         MaterialYouSingleTone(R.string.setting_single_tone, R.string.setting_desc_single_tone,
                         Nature.Boolean, false),
 

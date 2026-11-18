@@ -71,7 +71,7 @@ public class SettingsFragment extends Fragment {
 
     private MaterialSwitch switchDarkMode, switchAmoled, switchWinterMode, switchLogs, switchExternalInternet;
 
-    private LinearLayout amoledContainer, btnBackup, btnRestore, btnExportLogs, btnBlurControl, btnLanguage;
+    private LinearLayout amoledContainer, btnBackup, btnRestore, btnExportLogs, btnLanguage;
     private TextView tvAboutVersion, tvCurrentLanguage;
     private FrameLayout btnInfo;
     private MaterialButton btnTelegramSupport, btnChangelog;
@@ -79,7 +79,7 @@ public class SettingsFragment extends Fragment {
     private EditText etTextWindowChars;
 
     // Icons for candy colors
-    private android.widget.ImageView iconDarkMode, iconAmoled, iconBlur, iconMaterialYou;
+    private android.widget.ImageView iconDarkMode, iconAmoled, iconMaterialYou;
     private LinearLayout btnBackupRestore;
     private android.widget.ImageView iconLogging, iconInternet, iconExport, iconBackup;
 
@@ -235,14 +235,11 @@ public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceStat
         switchDarkMode = view.findViewById(R.id.switch_dark_mode);
         switchAmoled = view.findViewById(R.id.switch_amoled);
         switchWinterMode = view.findViewById(R.id.switch_winter_mode);
-        btnBlurControl = view.findViewById(R.id.btn_blur_control);
         switchLogs = view.findViewById(R.id.switch_logs);
         switchExternalInternet = view.findViewById(R.id.switch_external_internet);
         amoledContainer = view.findViewById(R.id.amoled_container);
         tvAboutVersion = view.findViewById(R.id.tv_about_version);
         btnInfo = view.findViewById(R.id.btn_info);
-        btnTelegramSupport = view.findViewById(R.id.btn_telegram_support);
-        btnChangelog = view.findViewById(R.id.btn_changelog);
         btnBackupRestore = view.findViewById(R.id.btn_backup_restore);
         btnExportLogs = view.findViewById(R.id.btn_export_logs);
         btnLanguage = view.findViewById(R.id.btn_language);
@@ -255,9 +252,9 @@ Runnable saveTextWindow = () -> {
     if (s.isEmpty()) return;
     try {
         int v = Integer.parseInt(s);
-        if (v < 50 || v > 2000) {
-            Toast.makeText(requireContext(), "Значение от 50 до 2000", Toast.LENGTH_SHORT).show();
-            etTextWindowChars.setText(String.valueOf(uiPrefs.getInt("text_window_chars", 500)));
+        if (v < 50 || v > 5000) {
+            Toast.makeText(requireContext(), "Значение от 50 до 5000", Toast.LENGTH_SHORT).show();
+            etTextWindowChars.setText(String.valueOf(uiPrefs.getInt("text_window500_chars", 500)));
             return;
         }
         uiPrefs.edit().putInt("text_window_chars", v).apply();          // канал 1: локальные UI-префы
@@ -283,7 +280,6 @@ etTextWindowChars.setOnEditorActionListener((v, actionId, event) -> {
         // Initialize icons for candy colors
         iconDarkMode = view.findViewById(R.id.icon_dark_mode);
         iconAmoled = view.findViewById(R.id.icon_amoled);
-        iconBlur = view.findViewById(R.id.icon_blur);
         iconMaterialYou = view.findViewById(R.id.icon_material_you);
         iconLogging = view.findViewById(R.id.icon_logging);
         iconInternet = view.findViewById(R.id.icon_internet);
@@ -409,7 +405,7 @@ etTextWindowChars.setOnEditorActionListener((v, actionId, event) -> {
 
         // Version
         // Version
-        tvAboutVersion.setText("Version " + BuildConfig.VERSION_NAME);
+        tvAboutVersion.setText("Version by Anatolii-orsk56");
 
         // Language
         updateLanguageText();
@@ -469,11 +465,6 @@ etTextWindowChars.setOnEditorActionListener((v, actionId, event) -> {
             }
         });
 
-        btnBlurControl.setOnClickListener(v -> {
-            Intent intent = new Intent(requireContext(), tn.eluea.kgpt.ui.settings.BlurControlActivity.class);
-            startActivity(intent);
-        });
-
         switchLogs.setOnCheckedChangeListener((buttonView, isChecked) -> {
             if (SPManager.isReady()) {
                 SPManager.getInstance().setOtherSetting(OtherSettingsType.EnableLogs, isChecked);
@@ -487,13 +478,6 @@ etTextWindowChars.setOnEditorActionListener((v, actionId, event) -> {
         });
 
         btnInfo.setOnClickListener(v -> showInfoBottomSheet());
-
-        btnTelegramSupport.setOnClickListener(v -> {
-            Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://t.me/SupKGPT"));
-            startActivity(intent);
-        });
-
-        btnChangelog.setOnClickListener(v -> showChangelogBottomSheet());
 
         if (btnBackupRestore != null) {
             btnBackupRestore.setOnClickListener(v -> {

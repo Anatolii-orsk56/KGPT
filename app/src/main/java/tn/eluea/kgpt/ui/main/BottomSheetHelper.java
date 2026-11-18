@@ -365,53 +365,11 @@ public class BottomSheetHelper {
     public static void applyBlurToWindow(Window window, Context context, boolean allowBlurBehind) {
         if (window == null || context == null) return;
 
-        SharedPreferences prefs = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
-        boolean isBlurEnabled = prefs.getBoolean("blur_enabled", true) && allowBlurBehind;
-        int blurIntensity = prefs.getInt("blur_intensity", 25);
-        boolean materialYouBlur = prefs.getBoolean("material_you_blur", false);
-        int blurTintColor = prefs.getInt("blur_tint_color", Color.TRANSPARENT);
-
         android.view.WindowManager.LayoutParams params = window.getAttributes();
-
-        if (!allowBlurBehind && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             params.setBlurBehindRadius(0);
             window.clearFlags(android.view.WindowManager.LayoutParams.FLAG_BLUR_BEHIND);
         }
-
-        if (isBlurEnabled && blurIntensity > 0) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                // Scale blur radius up to 80px for a clearly visible, premium frosted glass blur
-                int maxBlur = 80;
-                int blurRadius = Math.max((blurIntensity * maxBlur) / 100, 15);
-                params.setBlurBehindRadius(blurRadius);
-                window.addFlags(android.view.WindowManager.LayoutParams.FLAG_BLUR_BEHIND);
-            }
-
-            if (materialYouBlur) {
-                int surfaceColor = com.google.android.material.color.MaterialColors.getColor(context,
-                        com.google.android.material.R.attr.colorSurface, Color.BLACK);
-                int alpha = isDarkMode(context) ? 90 : 70;
-                int tinted = Color.argb(alpha, Color.red(surfaceColor), Color.green(surfaceColor), Color.blue(surfaceColor));
-                window.setBackgroundDrawable(new android.graphics.drawable.ColorDrawable(tinted));
-                params.dimAmount = 0.15f;
-            } else if (blurTintColor != Color.TRANSPARENT) {
-                int alpha = Math.max(Color.alpha(blurTintColor), 100);
-                int tinted = Color.argb(alpha, Color.red(blurTintColor), Color.green(blurTintColor), Color.blue(blurTintColor));
-                window.setBackgroundDrawable(new android.graphics.drawable.ColorDrawable(tinted));
-                params.dimAmount = 0.15f;
-            } else {
-                params.dimAmount = 0.35f;
-                window.setBackgroundDrawable(new android.graphics.drawable.ColorDrawable(Color.TRANSPARENT));
-            }
-        } else {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                params.setBlurBehindRadius(0);
-                window.clearFlags(android.view.WindowManager.LayoutParams.FLAG_BLUR_BEHIND);
-            }
-            params.dimAmount = 0.5f;
-            window.setBackgroundDrawable(new android.graphics.drawable.ColorDrawable(Color.TRANSPARENT));
-        }
-
         window.setAttributes(params);
     }
 
