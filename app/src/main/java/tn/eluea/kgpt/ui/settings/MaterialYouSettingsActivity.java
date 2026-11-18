@@ -167,7 +167,6 @@ public class MaterialYouSettingsActivity extends AppCompatActivity {
 
         // Visual helper for tint - applied to PREVIEW the selection visually
         // but decoupled from blur settings.
-        // Removed full window tinting to avoid confusion with Blur Control.
         // The preview is handled by updateColorPreview()
 
         // Initial setup
@@ -270,6 +269,7 @@ public class MaterialYouSettingsActivity extends AppCompatActivity {
 
         btnSave.setOnClickListener(v -> {
             manager.setSeedColor(selectedColor);
+            manager.setUseWallpaperSource(false);
             colorPickerSheet.dismiss();
             tn.eluea.kgpt.KGPTApplication.getInstance().recreateAllActivities();
             Toast.makeText(this, R.string.msg_theme_updated, Toast.LENGTH_SHORT).show();

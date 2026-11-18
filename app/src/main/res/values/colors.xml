@@ -174,7 +174,6 @@
     <!-- Settings Icon Colors -->
     <color name="candy_dark_mode">#9B59B6</color>        <!-- Purple - Dark Mode -->
     <color name="candy_amoled">#34495E</color>           <!-- Slate - AMOLED -->
-    <color name="candy_blur">#3498DB</color>             <!-- Blue - Blur Control -->
     <color name="candy_material_you">#E74C3C</color>     <!-- Red - Material You -->
     <color name="candy_logging">#E67E22</color>          <!-- Orange - Logging -->
     <color name="candy_internet">#27AE60</color>         <!-- Green - Internet Service -->
@@ -203,4 +202,53 @@
     <color name="candy_pink_light">#FCE4EC</color>
     <color name="candy_indigo_light">#E8EAF6</color>
     <color name="candy_slate_light">#EBEDEF</color>
+
+    <!-- Seed Color Overlays (API < 31 Fallback) -->
+    <color name="seed_red_primary">#E53935</color>
+    <color name="seed_red_on_primary">#FFFFFF</color>
+    <color name="seed_red_secondary">#C62828</color>
+
+    <color name="seed_orange_primary">#FB8C00</color>
+    <color name="seed_orange_on_primary">#FFFFFF</color>
+    <color name="seed_orange_secondary">#EF6C00</color>
+
+    <color name="seed_amber_primary">#FFB300</color>
+    <color name="seed_amber_on_primary">#000000</color>
+    <color name="seed_amber_secondary">#FFA000</color>
+
+    <color name="seed_yellow_primary">#FDD835</color>
+    <color name="seed_yellow_on_primary">#000000</color>
+    <color name="seed_yellow_secondary">#FBC02D</color>
+
+    <color name="seed_lime_primary">#C0CA33</color>
+    <color name="seed_lime_on_primary">#000000</color>
+    <color name="seed_lime_secondary">#AFB42B</color>
+
+    <color name="seed_green_primary">#43A047</color>
+    <color name="seed_green_on_primary">#FFFFFF</color>
+    <color name="seed_green_secondary">#2E7D32</color>
+
+    <color name="seed_teal_primary">#00897B</color>
+    <color name="seed_teal_on_primary">#FFFFFF</color>
+    <color name="seed_teal_secondary">#00695C</color>
+
+    <color name="seed_cyan_primary">#00ACC1</color>
+    <color name="seed_cyan_on_primary">#FFFFFF</color>
+    <color name="seed_cyan_secondary">#00838F</color>
+
+    <color name="seed_blue_primary">#4285F4</color>
+    <color name="seed_blue_on_primary">#FFFFFF</color>
+    <color name="seed_blue_secondary">#1967D2</color>
+
+    <color name="seed_indigo_primary">#3F51B5</color>
+    <color name="seed_indigo_on_primary">#FFFFFF</color>
+    <color name="seed_indigo_secondary">#283593</color>
+
+    <color name="seed_purple_primary">#8E24AA</color>
+    <color name="seed_purple_on_primary">#FFFFFF</color>
+    <color name="seed_purple_secondary">#6A1B9A</color>
+
+    <color name="seed_pink_primary">#D81B60</color>
+    <color name="seed_pink_on_primary">#FFFFFF</color>
+    <color name="seed_pink_secondary">#AD1457</color>
 </resources>

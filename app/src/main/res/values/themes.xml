@@ -37,7 +37,6 @@
         <!-- Ripple & Highlight -->
         <item name="colorControlHighlight">@color/ripple_dynamic_selection</item>
 
-
         <!-- Switch colors -->
         <item name="colorPrimaryInverse">?attr/colorPrimary</item>
 
@@ -58,8 +57,6 @@
         <item name="textAppearanceLabelMedium">@style/TextAppearance.KGPT.LabelMedium</item>
         <item name="textAppearanceLabelSmall">@style/TextAppearance.KGPT.LabelSmall</item>
     </style>
-
-
 
     <!-- AMOLED Overlay (Forces Black Backgrounds on top of Dynamic Colors) -->
     <style name="ThemeOverlay.KGPT.AMOLED" parent="">

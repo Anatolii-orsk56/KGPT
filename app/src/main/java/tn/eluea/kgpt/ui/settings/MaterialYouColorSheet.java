@@ -65,24 +65,6 @@ public class MaterialYouColorSheet extends Dialog {
             params.gravity = Gravity.CENTER;
             params.dimAmount = 0.5f;
 
-            // Check blur preferences
-            android.content.SharedPreferences prefs = getContext().getSharedPreferences("keyboard_gpt_ui",
-                    Context.MODE_PRIVATE);
-            boolean isBlurEnabled = prefs.getBoolean("blur_enabled", true);
-            int blurIntensity = prefs.getInt("blur_intensity", 25);
-
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                if (isBlurEnabled && blurIntensity > 0) {
-                    // Calculate actual blur radius (max 50 for performance)
-                    int blurRadius = (blurIntensity * 50) / 100;
-                    params.setBlurBehindRadius(blurRadius);
-                    window.addFlags(WindowManager.LayoutParams.FLAG_BLUR_BEHIND);
-                } else {
-                    params.setBlurBehindRadius(0);
-                    window.clearFlags(WindowManager.LayoutParams.FLAG_BLUR_BEHIND);
-                }
-            }
-
             window.setAttributes(params);
 
             // Edge-to-edge
