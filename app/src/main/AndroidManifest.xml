@@ -22,11 +22,6 @@
     <!-- Required to query all installed apps on Android 11+ -->
     <uses-permission android:name="android.permission.QUERY_ALL_PACKAGES"
         tools:ignore="QueryAllPackagesPermission" />
-    <!-- Required for installing updates -->
-    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
-    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
 
     <application
         android:name=".KGPTApplication"
@@ -95,11 +90,6 @@
             android:exported="false" />
 
         <activity
-            android:name=".ui.settings.UpdateSettingsActivity"
-            android:theme="@style/Theme.KGPT"
-            android:exported="false" />
-
-        <activity
             android:name=".ui.settings.BackupSettingsActivity"
             android:theme="@style/Theme.KGPT"
             android:exported="false" />
@@ -147,24 +137,12 @@
             android:grantUriPermissions="true"
             android:directBootAware="true" />
 
-        <!-- FileProvider for APK installation -->
-        <provider
-            android:name="androidx.core.content.FileProvider"
-            android:authorities="${applicationId}.fileprovider"
-            android:exported="false"
-            android:grantUriPermissions="true">
-            <meta-data
-                android:name="android.support.FILE_PROVIDER_PATHS"
-                android:resource="@xml/file_paths" />
-        </provider>
 
         <receiver
             android:name=".provider.BootReceiver"
-            android:directBootAware="true"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
-                <action android:name="android.intent.action.LOCKED_BOOT_COMPLETED" />
                 <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
             </intent-filter>
         </receiver>
@@ -176,55 +154,6 @@
                 <action android:name="tn.eluea.kgpt.TEXT_ACTION_REQUEST" />
             </intent-filter>
         </receiver>
-
-        <!-- Media Downloader Share Interceptor (Transparent Floating Entry) -->
-        <activity
-            android:name=".features.downloader.ui.MediaShareActivity"
-            android:theme="@style/Theme.KGPT.Translucent"
-            android:label="@string/nav_media_download"
-            android:launchMode="singleTop"
-            android:excludeFromRecents="true"
-            android:supportsPictureInPicture="false"
-            android:taskAffinity=""
-            android:exported="true">
-            <intent-filter>
-                <action android:name="android.intent.action.SEND" />
-                <category android:name="android.intent.category.DEFAULT" />
-                <data android:mimeType="text/*" />
-            </intent-filter>
-            <intent-filter>
-                <action android:name="android.intent.action.VIEW" />
-                <category android:name="android.intent.category.DEFAULT" />
-                <category android:name="android.intent.category.BROWSABLE" />
-                <data android:scheme="http" />
-                <data android:scheme="https" />
-                <data android:host="youtube.com" />
-                <data android:host="www.youtube.com" />
-                <data android:host="m.youtube.com" />
-                <data android:host="youtu.be" />
-            </intent-filter>
-            <intent-filter>
-                <action android:name="android.intent.action.VIEW" />
-                <category android:name="android.intent.category.DEFAULT" />
-                <category android:name="android.intent.category.BROWSABLE" />
-                <data android:scheme="http" />
-                <data android:scheme="https" />
-                <data android:mimeType="video/*" />
-                <data android:mimeType="audio/*" />
-            </intent-filter>
-        </activity>
-
-        <!-- Media Downloader Lab Manager Screen -->
-        <activity
-            android:name=".features.downloader.ui.MediaDownloaderActivity"
-            android:theme="@style/Theme.KGPT"
-            android:exported="false" />
-
-        <!-- Media Download Foreground Service -->
-        <service
-            android:name=".features.downloader.service.MediaDownloadService"
-            android:foregroundServiceType="dataSync"
-            android:exported="false" />
 
         <meta-data
             android:name="xposedmodule"
