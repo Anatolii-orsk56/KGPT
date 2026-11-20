@@ -36,7 +36,6 @@ import android.view.inputmethod.InputConnection;
 import androidx.core.content.ContextCompat;
 import tn.eluea.kgpt.provider.ConfigClient;
 import tn.eluea.kgpt.features.textactions.ui.TextActionsMenuActivity;
-import tn.eluea.kgpt.provider.XposedConfigReader;
 
 /**
  * Handles text selection detection and floating menu display.

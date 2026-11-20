@@ -22,7 +22,6 @@ import android.widget.TextView;
 import java.lang.ref.WeakReference;
 
 import tn.eluea.kgpt.features.textactions.domain.TextAction;
-import tn.eluea.kgpt.provider.XposedConfigReader;
 import tn.eluea.kgpt.provider.ConfigClient;
 
 /**

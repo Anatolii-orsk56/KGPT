@@ -83,9 +83,6 @@ public class SettingsFragment extends Fragment {
     private LinearLayout btnBackupRestore;
     private android.widget.ImageView iconLogging, iconInternet, iconExport, iconBackup;
 
-    // Update settings - single entry point
-    private LinearLayout btnUpdateSettings;
-
     private SharedPreferences uiPrefs;
     private BackupManager backupManager;
     private LogExporter logExporter;
@@ -286,8 +283,6 @@ etTextWindowChars.setOnEditorActionListener((v, actionId, event) -> {
         iconExport = view.findViewById(R.id.icon_export);
         iconBackup = view.findViewById(R.id.icon_backup);
 
-        // Initialize update settings button
-        btnUpdateSettings = view.findViewById(R.id.btn_update_settings);
     }
 
     private void applyThemeColors() {
@@ -405,7 +400,7 @@ etTextWindowChars.setOnEditorActionListener((v, actionId, event) -> {
 
         // Version
         // Version
-        tvAboutVersion.setText("Version by Anatolii-orsk56");
+        tvAboutVersion.setText("v " + BuildConfig.VERSION_NAME + " by Anatolii-orsk56");
 
         // Language
         updateLanguageText();
@@ -487,14 +482,6 @@ etTextWindowChars.setOnEditorActionListener((v, actionId, event) -> {
         }
         btnExportLogs.setOnClickListener(v -> startExportLogs());
         btnLanguage.setOnClickListener(v -> showLanguageDialog());
-
-        // Update settings - open dedicated activity
-        if (btnUpdateSettings != null) {
-            btnUpdateSettings.setOnClickListener(v -> {
-                Intent intent = new Intent(requireContext(), tn.eluea.kgpt.ui.settings.UpdateSettingsActivity.class);
-                startActivity(intent);
-            });
-        }
     }
 
     private void startBackup() {

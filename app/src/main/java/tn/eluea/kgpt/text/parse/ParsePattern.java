@@ -53,15 +53,12 @@ public class ParsePattern {
     }
 
     /**
-     * Check if this pattern is enabled.
-     * Backward-compatible default: data written before v3.0.2 has no _enabled
-     * extra, so a missing flag means ENABLED (except MediaDownloader which stays
-     * opt-in until the downloader core is installed).
+     * Check if this pattern is enabled
      */
     public boolean isEnabled() {
         String enabled = getExtra(EXTRA_ENABLED);
         if (enabled == null) {
-            return mType != PatternType.MediaDownloader;
+            return true;
         }
         return "true".equals(enabled);
     }
@@ -93,7 +90,7 @@ public class ParsePattern {
      */
     public static ParsePattern createDefault(PatternType type) {
         ParsePattern pattern = new ParsePattern(type, type.defaultPattern);
-        pattern.setEnabled(type != PatternType.MediaDownloader);
+        pattern.setEnabled(true);
         return pattern;
     }
 

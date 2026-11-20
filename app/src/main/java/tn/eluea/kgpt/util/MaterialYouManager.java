@@ -9,10 +9,14 @@ package tn.eluea.kgpt.util;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.os.Build;
+import android.os.UserManager;
+import android.util.Log;
 import com.google.android.material.color.DynamicColors;
 
 public class MaterialYouManager {
-    private static MaterialYouManager instance;
+    private static final String TAG = "KGPT_MaterialYouManager";
+    private static volatile MaterialYouManager instance;
     private final SharedPreferences prefs;
 
     public static final int DEFAULT_SEED_COLOR = 0xFF4285F4;
@@ -73,9 +77,25 @@ public class MaterialYouManager {
         this.prefs = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
     }
 
-    public static synchronized MaterialYouManager getInstance(Context context) {
+    public static MaterialYouManager getInstance(Context context) {
         if (instance == null) {
-            instance = new MaterialYouManager(context.getApplicationContext());
+            synchronized (MaterialYouManager.class) {
+                if (instance == null) {
+                    try {
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                            UserManager userManager = (UserManager) context.getSystemService(Context.USER_SERVICE);
+                            if (userManager != null && !userManager.isUserUnlocked()) {
+                                Log.w(TAG, "Device is locked (Direct Boot), deferring MaterialYouManager initialization");
+                                return null;
+                            }
+                        }
+                        instance = new MaterialYouManager(context.getApplicationContext());
+                    } catch (Exception e) {
+                        Log.e(TAG, "Failed to initialize MaterialYouManager", e);
+                        return null;
+                    }
+                }
+            }
         }
         return instance;
     }
@@ -123,22 +143,29 @@ public class MaterialYouManager {
     }
 
     public int getSeedColor() {
+        if (prefs == null) return DEFAULT_SEED_COLOR;
         return prefs.getInt(KEY_SEED_COLOR, DEFAULT_SEED_COLOR);
     }
 
     public void setSeedColor(int color) {
-        prefs.edit().putInt(KEY_SEED_COLOR, color).apply();
+        if (prefs != null) {
+            prefs.edit().putInt(KEY_SEED_COLOR, color).apply();
+        }
     }
 
     public boolean isUseWallpaperSource() {
+        if (prefs == null) return true;
         return prefs.getBoolean(KEY_USE_WALLPAPER, true);
     }
 
     public void setUseWallpaperSource(boolean use) {
-        prefs.edit().putBoolean(KEY_USE_WALLPAPER, use).apply();
+        if (prefs != null) {
+            prefs.edit().putBoolean(KEY_USE_WALLPAPER, use).apply();
+        }
     }
 
     public boolean isMaterialYouEnabled() {
+        if (prefs == null) return true;
         return prefs.getBoolean(KEY_ENABLED, true);
     }
 
@@ -188,6 +215,8 @@ public class MaterialYouManager {
     }
 
     public void setMaterialYouEnabled(boolean enabled) {
-    prefs.edit().putBoolean(KEY_ENABLED, enabled).apply();
+        if (prefs != null) {
+            prefs.edit().putBoolean(KEY_ENABLED, enabled).apply();
+        }
     }
 }

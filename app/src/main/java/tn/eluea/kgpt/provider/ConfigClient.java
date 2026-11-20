@@ -107,13 +107,8 @@ public static ConfigClient forHook(Context context) {
         try {
             Class.forName("io.github.libxposed.api.XposedModule");
             xposedAvailable = true;
-        } catch (ClassNotFoundException e) {
-            try {
-                Class.forName("de.robv.android.xposed.XSharedPreferences");
-                xposedAvailable = true;
-            } catch (ClassNotFoundException ignored) {
-                xposedAvailable = false;
-            }
+        } catch (ClassNotFoundException ignored) {
+            xposedAvailable = false;
         }
         IS_XPOSED_CONTEXT = xposedAvailable;
     }
@@ -204,19 +199,6 @@ public static ConfigClient forHook(Context context) {
             }
         } catch (Exception e) {
             // Log.d(TAG, "Provider query failed for: " + key + " - " + e.getMessage());
-        }
-
-        // Fallback: In Xposed context, try XSharedPreferences
-        if (IS_XPOSED_CONTEXT && XposedConfigReader.isAvailable()) {
-            try {
-                String value = XposedConfigReader.getString(key, null);
-                if (value != null) {
-                    mCache.put(key, value);
-                    return value;
-                }
-            } catch (Exception e) {
-                Log.d(TAG, "XSharedPreferences failed for: " + key + " - " + e.getMessage());
-            }
         }
 
         return defaultValue;
@@ -310,17 +292,6 @@ public static ConfigClient forHook(Context context) {
             // Log.d(TAG, "Provider query failed for boolean: " + key);
         }
 
-        // Fallback: In Xposed context, try XSharedPreferences
-        if (IS_XPOSED_CONTEXT && XposedConfigReader.isAvailable()) {
-            try {
-                boolean value = XposedConfigReader.getBoolean(key, defaultValue);
-                mCache.put(key, value);
-                return value;
-            } catch (Exception e) {
-                Log.d(TAG, "XSharedPreferences getBoolean failed for: " + key + " - " + e.getMessage());
-            }
-        }
-
         return defaultValue;
     }
 
@@ -396,17 +367,6 @@ public static ConfigClient forHook(Context context) {
             // Log.d(TAG, "Provider query failed for int: " + key);
         }
 
-        // Fallback: In Xposed context, try XSharedPreferences
-        if (IS_XPOSED_CONTEXT && XposedConfigReader.isAvailable()) {
-            try {
-                int value = XposedConfigReader.getInt(key, defaultValue);
-                mCache.put(key, value);
-                return value;
-            } catch (Exception e) {
-                Log.d(TAG, "XSharedPreferences getInt failed for: " + key + " - " + e.getMessage());
-            }
-        }
-
         String value = getString(key, null);
         if (value == null)
             return defaultValue;
@@ -447,14 +407,6 @@ public static ConfigClient forHook(Context context) {
 
     public void clearCache() {
         mCache.clear();
-        // Only call XposedConfigReader if in Xposed context
-        if (IS_XPOSED_CONTEXT) {
-            try {
-                XposedConfigReader.clearCache();
-            } catch (Exception e) {
-                // Ignore - not in Xposed context
-            }
-        }
     }
 
     public void destroy() {

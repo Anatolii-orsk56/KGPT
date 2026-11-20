@@ -27,8 +27,6 @@ import io.github.libxposed.api.XposedModuleInterface.PackageLoadedParam;
 import tn.eluea.kgpt.hook.HookManager;
 import tn.eluea.kgpt.hook.MethodHook;
 import tn.eluea.kgpt.hook.TextSelectionHook;
-import tn.eluea.kgpt.hook.YouTubeHook;
-import tn.eluea.kgpt.provider.XposedConfigReader;
 import tn.eluea.kgpt.ui.IMSController;
 import tn.eluea.kgpt.ui.UiInteractor;
 
@@ -85,15 +83,6 @@ public class MainHook extends XposedModule {
             } catch (Throwable t) {
                 MainHook.log("Failed to initialize SystemFrameworkHook: " + t.getMessage());
             }
-            return;
-        }
-
-        if ("com.google.android.youtube".equals(packageName) || "com.google.android.apps.youtube.music".equals(packageName)) {
-            MainHook.log("Hooking YouTube / YouTube Music for KGPT Downloader Integration");
-            if (hookManager == null) {
-                hookManager = new HookManager();
-            }
-            YouTubeHook.hook(hookManager, classLoader, packageName);
             return;
         }
 

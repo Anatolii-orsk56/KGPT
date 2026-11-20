@@ -47,6 +47,12 @@ public class WorldReadablePrefs {
             return sPrefs;
         }
 
+        // First check SafePrefs to ensure we don't crash during direct boot / locked state
+        SharedPreferences safe = tn.eluea.kgpt.util.SafePrefs.get(context, PREF_NAME);
+        if (safe == null) {
+            return null;
+        }
+
         try {
             // Use MODE_WORLD_READABLE - LSPosed hooks this to make it work
             sPrefs = context.getSharedPreferences(PREF_NAME, Context.MODE_WORLD_READABLE);

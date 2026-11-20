@@ -32,12 +32,9 @@ import java.util.Collections;
 import java.util.List;
 
 import tn.eluea.kgpt.provider.ConfigClient;
-import tn.eluea.kgpt.provider.XposedConfigReader;
 
 /**
  * Manager class for app triggers feature.
- * Uses XSharedPreferences (via XposedConfigReader) when running in Xposed
- * module context.
  */
 public class AppTriggerManager {
     private static final String TAG = "KGPT_AppTrigger";
@@ -63,7 +60,6 @@ public class AppTriggerManager {
         });
 
         Log.d(TAG, "AppTriggerManager initialized with " + appTriggers.size() + " triggers");
-        Log.d(TAG, "XSharedPreferences available: " + XposedConfigReader.isAvailable());
     }
 
     public static AppTriggerManager getInstance() {
@@ -71,48 +67,23 @@ public class AppTriggerManager {
     }
 
     private void loadTriggers() {
-        String encoded = null;
-
-        // Try XSharedPreferences first (works in both app and Xposed module)
-        if (XposedConfigReader.isAvailable()) {
-            encoded = XposedConfigReader.getString(PREF_APP_TRIGGERS, null);
-            Log.d(TAG, "loadTriggers() from XSharedPreferences: "
-                    + (encoded != null ? encoded.length() + " chars" : "null"));
-        }
-
-        // Fallback to ConfigClient (ContentProvider)
-        if (encoded == null) {
-            encoded = configClient.getString(PREF_APP_TRIGGERS, null);
-            Log.d(TAG, "loadTriggers() from ConfigClient: " + (encoded != null ? encoded.length() + " chars" : "null"));
-        }
+        String encoded = configClient.getString(PREF_APP_TRIGGERS, null);
+        Log.d(TAG, "loadTriggers() from ConfigClient: " + (encoded != null ? encoded.length() + " chars" : "null"));
 
         appTriggers = AppTrigger.decode(encoded);
         Log.d(TAG, "loadTriggers() - loaded " + appTriggers.size() + " triggers");
-
-        // Log debug info
-        if (appTriggers.isEmpty()) {
-            Log.d(TAG, XposedConfigReader.getDebugInfo());
-        }
     }
 
     public void reloadTriggers() {
-        // Force XSharedPreferences to reload from disk
-        XposedConfigReader.forceReload();
-        XposedConfigReader.clearCache();
         configClient.clearCache();
         loadTriggers();
-        Log.d(TAG, "reloadTriggers() - force reloaded, now have " + appTriggers.size() + " triggers");
+        Log.d(TAG, "reloadTriggers() - reloaded, now have " + appTriggers.size() + " triggers");
     }
 
     public void saveTriggers() {
         String encoded = AppTrigger.encode(appTriggers);
         configClient.putString(PREF_APP_TRIGGERS, encoded);
         Log.d(TAG, "saveTriggers() - saved " + appTriggers.size() + " triggers, encoded length: " + encoded.length());
-
-        // Force sync to ensure XSharedPreferences can read the changes.
-        // ContentProvider write is handled, but we notify Xposed module via broadcast
-        // or file observer implicitly.
-        // Removed Thread.sleep as it is unreliable.
     }
 
     public List<AppTrigger> getAppTriggers() {
@@ -146,14 +117,6 @@ public class AppTriggerManager {
     }
 
     public boolean isFeatureEnabled() {
-        // Try XSharedPreferences first
-        if (XposedConfigReader.isAvailable()) {
-            boolean enabled = XposedConfigReader.getBoolean(PREF_APP_TRIGGERS_ENABLED, true);
-            Log.d(TAG, "isFeatureEnabled() from XSharedPreferences = " + enabled);
-            return enabled;
-        }
-
-        // Fallback to ConfigClient
         configClient.clearCache();
         boolean enabled = configClient.getBoolean(PREF_APP_TRIGGERS_ENABLED, true);
         Log.d(TAG, "isFeatureEnabled() from ConfigClient = " + enabled);
@@ -163,8 +126,6 @@ public class AppTriggerManager {
     public void setFeatureEnabled(boolean enabled) {
         configClient.putBoolean(PREF_APP_TRIGGERS_ENABLED, enabled);
         Log.d(TAG, "setFeatureEnabled(" + enabled + ")");
-
-        // Removed unreliable Thread.sleep
     }
 
     public AppTrigger findByTrigger(String triggerText) {

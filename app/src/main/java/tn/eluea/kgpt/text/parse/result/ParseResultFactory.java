@@ -21,8 +21,6 @@ public interface ParseResultFactory {
                 return new CommandParseResultFactory();
             case WebSearch:
                 return new WebSearchParseResultFactory();
-            case MediaDownloader:
-                return new MediaDownloaderParseResultFactory();
             case FormatBold:
                 return new FormatParseResultFactory(ConversionMethod.BOLD);
             case FormatItalic:

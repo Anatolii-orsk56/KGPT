@@ -123,9 +123,6 @@ public class MainActivity extends AppCompatActivity {
         } else {
             loadFragment(new HomeFragment());
             updateNavSelection(0);
-
-            // Check for updates on first launch
-            checkForUpdates();
         }
     }
 
@@ -141,35 +138,6 @@ public class MainActivity extends AppCompatActivity {
             snowfallView.bringToFront();
         } else {
             snowfallView.setVisibility(View.GONE);
-        }
-    }
-
-    /**
-     * Check for updates and show bottom sheet if available.
-     * Only shows automatically if auto-update checking is enabled in settings.
-     * Manual checks via "Check for Updates" button bypass this setting.
-     */
-    private void checkForUpdates() {
-        // Only check automatically if auto-updates are enabled
-        if (!SPManager.isReady() || !SPManager.getInstance().getUpdateCheckEnabled()) {
-            // Auto-updates disabled - don't show update card on app launch
-            return;
-        }
-
-        // Show cached update if available (from background check)
-        tn.eluea.kgpt.updater.UpdateInfo cachedUpdate = tn.eluea.kgpt.updater.UpdateWorker.getCachedUpdate(this);
-
-        if (cachedUpdate != null) {
-            // Small delay to let the UI settle
-            new android.os.Handler(android.os.Looper.getMainLooper()).postDelayed(() -> {
-                tn.eluea.kgpt.updater.UpdateBottomSheet.showCachedUpdate(this);
-            }, 1000);
-        } else {
-            // Trigger a fresh background check
-            // This will only show the dialog if an update is found
-            new android.os.Handler(android.os.Looper.getMainLooper()).postDelayed(() -> {
-                tn.eluea.kgpt.updater.UpdateBottomSheet.checkAndShow(this);
-            }, 2000);
         }
     }
 

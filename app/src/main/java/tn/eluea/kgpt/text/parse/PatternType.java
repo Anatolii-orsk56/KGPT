@@ -17,8 +17,7 @@ public enum PatternType {
     FormatBold(R.string.title_bold, 1, "([^@]+)@$", true, "@", R.string.example_format_bold),
     FormatCrossout(R.string.title_crossout, 1, "([^~]+)~$", true, "~", R.string.example_format_crossout),
     FormatUnderline(R.string.title_underline, 1, "([^_]+)_$", true, "_", R.string.example_format_underline),
-    WebSearch(R.string.title_web_search, 1, "(.+)\\?\\?$", true, "??", R.string.example_ai_responds),
-    MediaDownloader(R.string.title_downloader_trigger, 1, "(.+)/down$", true, "/down", R.string.example_downloader_trigger);
+    WebSearch(R.string.title_web_search, 1, "(.+)\\?\\?$", true, "??", R.string.example_ai_responds);
 
     public final int titleResId;
     public final int groupCount;

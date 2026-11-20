@@ -6,6 +6,7 @@ import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.os.Build;
+import android.os.UserManager;
 import java.util.Locale;
 
 public class LocaleHelper {
@@ -42,13 +43,35 @@ public class LocaleHelper {
     }
 
     private static String getPersistedData(Context context, String defaultLanguage) {
-        SharedPreferences preferences = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
-        return preferences.getString(PREF_LANGUAGE, defaultLanguage);
+        try {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                UserManager userManager = (UserManager) context.getSystemService(Context.USER_SERVICE);
+                if (userManager != null && !userManager.isUserUnlocked()) {
+                    // Device is locked (Direct Boot phase), CE storage is not available.
+                    // Fall back to default language safely without throwing IllegalStateException.
+                    return defaultLanguage;
+                }
+            }
+            SharedPreferences preferences = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
+            return preferences.getString(PREF_LANGUAGE, defaultLanguage);
+        } catch (Exception e) {
+            // Fallback for any storage/encryption exceptions during direct boot
+            return defaultLanguage;
+        }
     }
 
     private static void persist(Context context, String language) {
-        SharedPreferences preferences = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
-        preferences.edit().putString(PREF_LANGUAGE, language).apply();
+        try {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                UserManager userManager = (UserManager) context.getSystemService(Context.USER_SERVICE);
+                if (userManager != null && !userManager.isUserUnlocked()) {
+                    return; // Cannot persist while device is locked
+                }
+            }
+            SharedPreferences preferences = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
+            preferences.edit().putString(PREF_LANGUAGE, language).apply();
+        } catch (Exception ignored) {
+        }
     }
 
     @TargetApi(Build.VERSION_CODES.N)

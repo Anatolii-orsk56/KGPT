@@ -87,10 +87,6 @@ public class TextActionCommands {
         COMMAND_MAP.put("translate", TextAction.TRANSLATE);
         COMMAND_MAP.put("trans", TextAction.TRANSLATE);
 
-        // Download commands
-        COMMAND_MAP.put("down", TextAction.DOWNLOAD);
-        COMMAND_MAP.put("download", TextAction.DOWNLOAD);
-        COMMAND_MAP.put("dl", TextAction.DOWNLOAD);
     }
 
     // Pattern to match: text $command

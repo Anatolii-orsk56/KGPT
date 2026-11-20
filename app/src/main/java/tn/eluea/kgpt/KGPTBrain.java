@@ -15,7 +15,6 @@ import tn.eluea.kgpt.instruction.command.CommandManager;
 import tn.eluea.kgpt.listener.DialogDismissListener;
 import tn.eluea.kgpt.listener.InputEventListener;
 import tn.eluea.kgpt.llm.GenerativeAIController;
-import tn.eluea.kgpt.provider.XposedConfigReader;
 import tn.eluea.kgpt.text.TextParser;
 import tn.eluea.kgpt.text.parse.result.ParseResult;
 import tn.eluea.kgpt.features.textactions.SelectionHandler;
@@ -102,11 +101,10 @@ public class KGPTBrain implements InputEventListener, DialogDismissListener {
         loadInlineAskPrefix(context);;
 
         tn.eluea.kgpt.util.Logger.log("KGPTBrain initialized (Refactored)");
-        tn.eluea.kgpt.util.Logger.log("XSharedPreferences available: " + XposedConfigReader.isAvailable());
     }
 
     /**
-     * Load inline ask prefix from XSharedPreferences
+     * Load inline ask prefix from config
      */
     
 
@@ -122,14 +120,12 @@ private void loadInlineAskPrefix(Context context) {
 }
 
     /**
-     * Periodically reload config from XSharedPreferences to pick up changes
+     * Periodically reload config to pick up changes
      */
     private void reloadConfigIfNeeded() {
         long now = System.currentTimeMillis();
         if (now - lastConfigReload > CONFIG_RELOAD_INTERVAL) {
             lastConfigReload = now;
-            // Force XSharedPreferences to reload
-            XposedConfigReader.forceReload();
             // Reload app triggers
             if (mAppTriggerManager != null) {
                 mAppTriggerManager.reloadTriggers();

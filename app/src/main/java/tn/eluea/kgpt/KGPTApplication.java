@@ -23,6 +23,7 @@ import android.app.Application;
 import android.content.SharedPreferences;
 import android.os.UserManager;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatDelegate;
 
 /**
@@ -51,6 +52,30 @@ public class KGPTApplication extends Application {
         super.onCreate();
         instance = this;
 
+        // Check if user is unlocked; if locked, register receiver to re-apply locale and init MaterialYou after unlock
+        UserManager userManager = (UserManager) getSystemService(USER_SERVICE);
+        if (userManager != null && !userManager.isUserUnlocked()) {
+            android.content.IntentFilter unlockFilter = new android.content.IntentFilter(android.content.Intent.ACTION_USER_UNLOCKED);
+            registerReceiver(new android.content.BroadcastReceiver() {
+                @Override
+                public void onReceive(android.content.Context context, android.content.Intent intent) {
+                    if (android.content.Intent.ACTION_USER_UNLOCKED.equals(intent.getAction())) {
+                        try {
+                            unregisterReceiver(this);
+                        } catch (Exception ignored) {}
+                        // Re-apply locale now that credential storage is available
+                        tn.eluea.kgpt.util.LocaleHelper.setLocale(
+                                getApplicationContext(),
+                                tn.eluea.kgpt.util.LocaleHelper.getLanguage(getApplicationContext())
+                        );
+                        // Initialize MaterialYouManager now that user is unlocked
+                        tn.eluea.kgpt.util.MaterialYouManager.getInstance(getApplicationContext());
+                        tn.eluea.kgpt.util.Logger.log("KGPTApplication: Locale and MaterialYouManager initialized after ACTION_USER_UNLOCKED");
+                    }
+                }
+            }, unlockFilter);
+        }
+
         // Initialize SPManager to ensure we can read prefs
         tn.eluea.kgpt.SPManager.init(this);
 
@@ -63,25 +88,15 @@ public class KGPTApplication extends Application {
         // Sync component state (ProcessTextActivity) with preferences
         syncComponentState();
 
-        // Initialize Update Checker (WorkManager for periodic checks)
-        initializeUpdateChecker();
-
-        // Pre-initialize DownloaderEngine in background thread for instant downloads
-        java.util.concurrent.Executors.newSingleThreadExecutor().execute(() -> {
-            try {
-                tn.eluea.kgpt.features.downloader.core.DownloaderEngine.getInstance().init(this);
-            } catch (Throwable t) {
-                android.util.Log.e("KGPTApplication", "DownloaderEngine pre-init error", t);
-            }
-        });
-
         // Initialize Material You Manager and register callback for global theming
-        tn.eluea.kgpt.util.MaterialYouManager manager = tn.eluea.kgpt.util.MaterialYouManager.getInstance(this);
         registerActivityLifecycleCallbacks(new android.app.Application.ActivityLifecycleCallbacks() {
             @Override
             public void onActivityPreCreated(android.app.Activity activity, android.os.Bundle savedInstanceState) {
                 // This is called BEFORE inflation, ensuring theme applies correctly (API 29+)
-                manager.applyTheme(activity);
+                tn.eluea.kgpt.util.MaterialYouManager manager = tn.eluea.kgpt.util.MaterialYouManager.getInstance(activity);
+                if (manager != null) {
+                    manager.applyTheme(activity);
+                }
             }
 
             @Override
@@ -93,7 +108,10 @@ public class KGPTApplication extends Application {
                 // Note: For full Material You support (API 31+), onActivityPreCreated handles
                 // it.
                 if (android.os.Build.VERSION.SDK_INT < 29) {
-                    manager.applyTheme(activity);
+                    tn.eluea.kgpt.util.MaterialYouManager manager = tn.eluea.kgpt.util.MaterialYouManager.getInstance(activity);
+                    if (manager != null) {
+                        manager.applyTheme(activity);
+                    }
                 }
             }
 
@@ -174,26 +192,6 @@ public class KGPTApplication extends Application {
     }
 
     /**
-     * Initialize the update checker.
-     * Schedules periodic update checks using WorkManager based on user settings.
-     */
-    private void initializeUpdateChecker() {
-        try {
-            if (SPManager.isReady() && SPManager.getInstance().getUpdateCheckEnabled()) {
-                int intervalHours = SPManager.getInstance().getUpdateCheckInterval();
-                tn.eluea.kgpt.updater.UpdateWorker.scheduleUpdateCheck(this, intervalHours);
-                tn.eluea.kgpt.util.Logger
-                        .log("KGPTApplication: Update checker scheduled every " + intervalHours + " hours");
-            } else {
-                tn.eluea.kgpt.updater.UpdateWorker.cancelUpdateCheck(this);
-                tn.eluea.kgpt.util.Logger.log("KGPTApplication: Update checker disabled");
-            }
-        } catch (Exception e) {
-            tn.eluea.kgpt.util.Logger.error("KGPTApplication: Failed to initialize update checker: " + e.getMessage());
-        }
-    }
-
-    /**
      * Apply the saved theme preference globally.
      * This ensures all activities use the correct theme mode.
      */
@@ -207,8 +205,8 @@ public class KGPTApplication extends Application {
             return;
         }
 
-        SharedPreferences prefs = getSharedPreferences(PREF_NAME, MODE_PRIVATE);
-        boolean isDarkMode = prefs.getBoolean(PREF_THEME, false);
+        SharedPreferences prefs = tn.eluea.kgpt.util.SafePrefs.get(this, PREF_NAME);
+        boolean isDarkMode = prefs != null && prefs.getBoolean(PREF_THEME, false);
 
         if (isDarkMode) {
             AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);

@@ -23,7 +23,7 @@ public class Commands {
         ArrayList<GenerativeAICommand> defaults = new ArrayList<>();
         
         defaults.add(new SimpleGenerativeAICommand("tr", 
-            "Translate the following text. If it's in Arabic, translate to English and vice versa. Give only the translation."));
+            "Translate the following text. If it’s in Russian, translate it into English. Otherwise, translate it into Russian.Give only the translation."));
         
         defaults.add(new SimpleGenerativeAICommand("fix", 
             "Fix spelling and grammar errors in the following text. Give only the corrected text."));

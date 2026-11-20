@@ -64,15 +64,6 @@ public class LabFragment extends Fragment {
                 ((MainActivity) getActivity()).navigateToTextActions();
             }
         });
-
-        // Media Downloader feature
-        View cardDownloader = view.findViewById(R.id.card_media_downloader);
-        if (cardDownloader != null) {
-            cardDownloader.setOnClickListener(v -> {
-                android.content.Intent intent = new android.content.Intent(requireContext(), tn.eluea.kgpt.features.downloader.ui.MediaDownloaderActivity.class);
-                startActivity(intent);
-            });
-        }
     }
 
     private void applyAmoledIfNeeded() {
