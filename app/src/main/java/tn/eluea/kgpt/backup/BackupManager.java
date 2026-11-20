@@ -133,8 +133,8 @@ public class BackupManager {
         }
 
         if (options.isSelected(BackupOptions.Option.APPEARANCE)) {
-            backup.put(KEY_THEME, uiPrefs.getBoolean("theme_mode", false));
-            backup.put(KEY_AMOLED, uiPrefs.getBoolean("amoled_mode", false));
+            backup.put(KEY_THEME, spManager.getThemeMode());
+            backup.put(KEY_AMOLED, spManager.isAmoledTheme());
             backup.put(KEY_MATERIAL_YOU_ENABLED,
                     MaterialYouManager.getInstance(context).isMaterialYouEnabled());
             backup.put(KEY_MATERIAL_YOU_USE_WALLPAPER,
@@ -316,11 +316,15 @@ public class BackupManager {
                 boolean restored = false;
                 SharedPreferences.Editor editor = uiPrefs.edit();
                 if (backup.has(KEY_THEME)) {
-                    editor.putBoolean("theme_mode", backup.getBoolean(KEY_THEME));
+                    boolean val = backup.getBoolean(KEY_THEME);
+                    spManager.setThemeMode(val);
+                    editor.putBoolean("theme_mode", val);
                     restored = true;
                 }
                 if (backup.has(KEY_AMOLED)) {
-                    editor.putBoolean("amoled_mode", backup.getBoolean(KEY_AMOLED));
+                    boolean val = backup.getBoolean(KEY_AMOLED);
+                    spManager.setAmoledTheme(val);
+                    editor.putBoolean("amoled_mode", val);
                     restored = true;
                 }
                 editor.apply();

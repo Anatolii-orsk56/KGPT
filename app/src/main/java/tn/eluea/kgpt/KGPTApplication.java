@@ -196,22 +196,30 @@ public class KGPTApplication extends Application {
      * This ensures all activities use the correct theme mode.
      */
     private void applyGlobalTheme() {
-        // Check if user is unlocked (device not locked)
-        // SharedPreferences are not available before unlock
-        UserManager userManager = (UserManager) getSystemService(USER_SERVICE);
-        if (userManager != null && !userManager.isUserUnlocked()) {
-            // Device is locked, use default light theme
-            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
-            return;
+        boolean isDarkMode = readThemeMode(this);
+        applyTheme(isDarkMode);
+    }
+
+    public static boolean readThemeMode(android.content.Context context) {
+        if (SPManager.isReady()) {
+            return SPManager.getInstance().getThemeMode();
         }
-
-        SharedPreferences prefs = tn.eluea.kgpt.util.SafePrefs.get(this, PREF_NAME);
-        boolean isDarkMode = prefs != null && prefs.getBoolean(PREF_THEME, false);
-
-        if (isDarkMode) {
-            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
-        } else {
-            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
+        try {
+            tn.eluea.kgpt.provider.ConfigClient client = new tn.eluea.kgpt.provider.ConfigClient(context);
+            boolean isDarkMode = client.getBoolean(PREF_THEME, false);
+            client.destroy();
+            return isDarkMode;
+        } catch (Exception e) {
+            try {
+                UserManager userManager = (UserManager) context.getSystemService(USER_SERVICE);
+                if (userManager == null || userManager.isUserUnlocked()) {
+                    SharedPreferences prefs = tn.eluea.kgpt.util.SafePrefs.get(context, PREF_NAME);
+                    if (prefs != null && prefs.contains(PREF_THEME)) {
+                        return prefs.getBoolean(PREF_THEME, false);
+                    }
+                }
+            } catch (Exception ignored) {}
+            return false;
         }
     }
 

@@ -200,8 +200,21 @@ public class MaterialYouManager {
     }
 
     private void checkAndApplyAmoledOverlay(android.app.Activity activity) {
-        SharedPreferences appPrefs = activity.getSharedPreferences("keyboard_gpt_ui", Context.MODE_PRIVATE);
-        boolean isAmoled = appPrefs.getBoolean("amoled_mode", false);
+        boolean isAmoled = false;
+        if (tn.eluea.kgpt.SPManager.isReady()) {
+            isAmoled = tn.eluea.kgpt.SPManager.getInstance().isAmoledTheme();
+        } else {
+            try {
+                tn.eluea.kgpt.provider.ConfigClient client = new tn.eluea.kgpt.provider.ConfigClient(activity);
+                isAmoled = client.getBoolean("amoled_mode", false);
+                client.destroy();
+            } catch (Exception e) {
+                try {
+                    SharedPreferences appPrefs = activity.getSharedPreferences("keyboard_gpt_ui", Context.MODE_PRIVATE);
+                    isAmoled = appPrefs.getBoolean("amoled_mode", false);
+                } catch (Exception ignored) {}
+            }
+        }
 
         // Check if Night Mode is actually active in the resources configuration
         // This handles explicit preference AND system default cases correctly.

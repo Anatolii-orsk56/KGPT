@@ -83,8 +83,21 @@ public class TextActionsUiComposer {
      * Detect current theme mode: Light, Dark, or AMOLED
      */
     private int detectTheme(Context context) {
-        SharedPreferences prefs = context.getSharedPreferences("keyboard_gpt_ui", Context.MODE_PRIVATE);
-        boolean isAmoled = prefs.getBoolean("amoled_mode", false);
+        boolean isAmoled = false;
+        if (tn.eluea.kgpt.SPManager.isReady()) {
+            isAmoled = tn.eluea.kgpt.SPManager.getInstance().isAmoledTheme();
+        } else {
+            try {
+                tn.eluea.kgpt.provider.ConfigClient client = new tn.eluea.kgpt.provider.ConfigClient(context);
+                isAmoled = client.getBoolean("amoled_mode", false);
+                client.destroy();
+            } catch (Exception e) {
+                try {
+                    SharedPreferences prefs = context.getSharedPreferences("keyboard_gpt_ui", Context.MODE_PRIVATE);
+                    isAmoled = prefs.getBoolean("amoled_mode", false);
+                } catch (Exception ignored) {}
+            }
+        }
 
         int nightModeFlags = context.getResources().getConfiguration().uiMode & Configuration.UI_MODE_NIGHT_MASK;
         boolean isDarkMode = nightModeFlags == Configuration.UI_MODE_NIGHT_YES;

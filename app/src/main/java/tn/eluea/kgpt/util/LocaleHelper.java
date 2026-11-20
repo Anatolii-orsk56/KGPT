@@ -44,32 +44,37 @@ public class LocaleHelper {
 
     private static String getPersistedData(Context context, String defaultLanguage) {
         try {
+            if (tn.eluea.kgpt.SPManager.isReady()) {
+                String lang = tn.eluea.kgpt.SPManager.getInstance().getAppLanguage();
+                if (lang != null) return lang;
+            }
+            tn.eluea.kgpt.provider.ConfigClient client = new tn.eluea.kgpt.provider.ConfigClient(context);
+            String lang = client.getString(PREF_LANGUAGE, null);
+            client.destroy();
+            if (lang != null) return lang;
+
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
                 UserManager userManager = (UserManager) context.getSystemService(Context.USER_SERVICE);
                 if (userManager != null && !userManager.isUserUnlocked()) {
-                    // Device is locked (Direct Boot phase), CE storage is not available.
-                    // Fall back to default language safely without throwing IllegalStateException.
                     return defaultLanguage;
                 }
             }
             SharedPreferences preferences = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
             return preferences.getString(PREF_LANGUAGE, defaultLanguage);
         } catch (Exception e) {
-            // Fallback for any storage/encryption exceptions during direct boot
             return defaultLanguage;
         }
     }
 
     private static void persist(Context context, String language) {
         try {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                UserManager userManager = (UserManager) context.getSystemService(Context.USER_SERVICE);
-                if (userManager != null && !userManager.isUserUnlocked()) {
-                    return; // Cannot persist while device is locked
-                }
+            if (tn.eluea.kgpt.SPManager.isReady()) {
+                tn.eluea.kgpt.SPManager.getInstance().setAppLanguage(language);
+                return;
             }
-            SharedPreferences preferences = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
-            preferences.edit().putString(PREF_LANGUAGE, language).apply();
+            tn.eluea.kgpt.provider.ConfigClient client = new tn.eluea.kgpt.provider.ConfigClient(context);
+            client.putString(PREF_LANGUAGE, language);
+            client.destroy();
         } catch (Exception ignored) {
         }
     }

@@ -55,10 +55,69 @@ public class SPManager implements ConfigInfoProvider {
 
     private SPManager(Context context) {
         mClient = new ConfigClient(context);
+        migrateLegacyPrefs(context);
         updateVersion();
         initializeDefaultCommands();
         initializeDefaultPatterns();
         updateGenerativeAICommands();
+    }
+
+    private void migrateLegacyPrefs(Context context) {
+        try {
+            android.content.SharedPreferences prefs = context.getSharedPreferences("keyboard_gpt_ui", Context.MODE_PRIVATE);
+            if (prefs != null) {
+                if (!mClient.contains("theme_mode") && prefs.contains("theme_mode")) {
+                    mClient.putBoolean("theme_mode", prefs.getBoolean("theme_mode", false));
+                }
+                if (!mClient.contains("amoled_mode") && prefs.contains("amoled_mode")) {
+                    mClient.putBoolean("amoled_mode", prefs.getBoolean("amoled_mode", false));
+                }
+                if (!mClient.contains("winter_mode") && prefs.contains("winter_mode")) {
+                    mClient.putBoolean("winter_mode", prefs.getBoolean("winter_mode", false));
+                }
+                if (!mClient.contains("app_language") && prefs.contains("app_language")) {
+                    String lang = prefs.getString("app_language", null);
+                    if (lang != null) {
+                        mClient.putString("app_language", lang);
+                    }
+                }
+            }
+        } catch (Exception e) {
+            tn.eluea.kgpt.util.Logger.error("SPManager: Legacy prefs migration failed: " + e.getMessage());
+        }
+    }
+
+    public boolean getThemeMode() {
+        return mClient.getBoolean("theme_mode", false);
+    }
+
+    public void setThemeMode(boolean enabled) {
+        mClient.putBoolean("theme_mode", enabled);
+    }
+
+    public boolean isAmoledTheme() {
+        // Use raw key "amoled_mode" to match SettingsFragment implementation
+        return mClient.getBoolean("amoled_mode", false);
+    }
+
+    public void setAmoledTheme(boolean enabled) {
+        mClient.putBoolean("amoled_mode", enabled);
+    }
+
+    public boolean getWinterMode() {
+        return mClient.getBoolean("winter_mode", false);
+    }
+
+    public void setWinterMode(boolean enabled) {
+        mClient.putBoolean("winter_mode", enabled);
+    }
+
+    public String getAppLanguage() {
+        return mClient.getString("app_language", null);
+    }
+
+    public void setAppLanguage(String lang) {
+        mClient.putString("app_language", lang);
     }
 
     private void initializeDefaultCommands() {
@@ -350,10 +409,5 @@ public class SPManager implements ConfigInfoProvider {
      */
     public ConfigClient getConfigClient() {
         return mClient;
-    }
-
-    public boolean isAmoledTheme() {
-        // Use raw key "amoled_mode" to match SettingsFragment implementation
-        return mClient.getBoolean("amoled_mode", false);
     }
 }

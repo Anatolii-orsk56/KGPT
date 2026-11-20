@@ -130,8 +130,21 @@ public class MainActivity extends AppCompatActivity {
         if (snowfallView == null)
             return;
 
-        SharedPreferences prefs = getSharedPreferences("keyboard_gpt_ui", android.content.Context.MODE_PRIVATE);
-        boolean isWinterMode = prefs.getBoolean(PREF_WINTER_MODE, false);
+        boolean isWinterMode = false;
+        if (tn.eluea.kgpt.SPManager.isReady()) {
+            isWinterMode = tn.eluea.kgpt.SPManager.getInstance().getWinterMode();
+        } else {
+            try {
+                tn.eluea.kgpt.provider.ConfigClient client = new tn.eluea.kgpt.provider.ConfigClient(this);
+                isWinterMode = client.getBoolean(PREF_WINTER_MODE, false);
+                client.destroy();
+            } catch (Exception e) {
+                try {
+                    SharedPreferences prefs = getSharedPreferences("keyboard_gpt_ui", android.content.Context.MODE_PRIVATE);
+                    isWinterMode = prefs.getBoolean(PREF_WINTER_MODE, false);
+                } catch (Exception ignored) {}
+            }
+        }
 
         if (isWinterMode) {
             snowfallView.setVisibility(View.VISIBLE);

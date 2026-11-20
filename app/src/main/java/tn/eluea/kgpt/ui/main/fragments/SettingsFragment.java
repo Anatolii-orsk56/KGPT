@@ -346,8 +346,22 @@ etTextWindowChars.setOnEditorActionListener((v, actionId, event) -> {
     }
 
     private void applyAmoledIfNeeded() {
-        boolean isAmoled = uiPrefs.getBoolean(PREF_AMOLED, false);
-        boolean isDarkMode = uiPrefs.getBoolean(PREF_THEME, false);
+        boolean isAmoled = false;
+        boolean isDarkMode = false;
+        if (SPManager.isReady()) {
+            isAmoled = SPManager.getInstance().isAmoledTheme();
+            isDarkMode = SPManager.getInstance().getThemeMode();
+        } else {
+            try {
+                tn.eluea.kgpt.provider.ConfigClient client = new tn.eluea.kgpt.provider.ConfigClient(requireContext());
+                isAmoled = client.getBoolean(PREF_AMOLED, false);
+                isDarkMode = client.getBoolean(PREF_THEME, false);
+                client.destroy();
+            } catch (Exception e) {
+                isAmoled = uiPrefs.getBoolean(PREF_AMOLED, false);
+                isDarkMode = uiPrefs.getBoolean(PREF_THEME, false);
+            }
+        }
 
         if (isDarkMode && isAmoled) {
             // Apply AMOLED colors
@@ -376,14 +390,23 @@ etTextWindowChars.setOnEditorActionListener((v, actionId, event) -> {
 
     private void loadSettings() {
         // UI Settings
-        boolean isDarkMode = uiPrefs.getBoolean(PREF_THEME, false);
-        boolean isAmoled = uiPrefs.getBoolean(PREF_AMOLED, false);
+        boolean isDarkMode = false;
+        boolean isAmoled = false;
+        boolean isWinterMode = false;
+        if (SPManager.isReady()) {
+            isDarkMode = SPManager.getInstance().getThemeMode();
+            isAmoled = SPManager.getInstance().isAmoledTheme();
+            isWinterMode = SPManager.getInstance().getWinterMode();
+        } else {
+            isDarkMode = uiPrefs.getBoolean(PREF_THEME, false);
+            isAmoled = uiPrefs.getBoolean(PREF_AMOLED, false);
+            isWinterMode = uiPrefs.getBoolean(PREF_WINTER_MODE, false);
+        }
 
         switchDarkMode.setChecked(isDarkMode);
         switchAmoled.setChecked(isAmoled);
 
         // Winter Mode
-        boolean isWinterMode = uiPrefs.getBoolean(PREF_WINTER_MODE, false);
         if (switchWinterMode != null) {
             switchWinterMode.setChecked(isWinterMode);
         }
@@ -399,7 +422,6 @@ etTextWindowChars.setOnEditorActionListener((v, actionId, event) -> {
         }
 
         // Version
-        // Version
         tvAboutVersion.setText("v " + BuildConfig.VERSION_NAME + " by Anatolii-orsk56");
 
         // Language
@@ -408,6 +430,9 @@ etTextWindowChars.setOnEditorActionListener((v, actionId, event) -> {
 
     private void setupListeners() {
         switchDarkMode.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            if (SPManager.isReady()) {
+                SPManager.getInstance().setThemeMode(isChecked);
+            }
             uiPrefs.edit().putBoolean(PREF_THEME, isChecked).apply();
 
             // Update AMOLED option availability
@@ -416,6 +441,9 @@ etTextWindowChars.setOnEditorActionListener((v, actionId, event) -> {
 
             if (!isChecked && switchAmoled.isChecked()) {
                 switchAmoled.setChecked(false);
+                if (SPManager.isReady()) {
+                    SPManager.getInstance().setAmoledTheme(false);
+                }
                 uiPrefs.edit().putBoolean(PREF_AMOLED, false).apply();
             }
 
@@ -430,6 +458,9 @@ etTextWindowChars.setOnEditorActionListener((v, actionId, event) -> {
 
         if (switchWinterMode != null) {
             switchWinterMode.setOnCheckedChangeListener((buttonView, isChecked) -> {
+                if (SPManager.isReady()) {
+                    SPManager.getInstance().setWinterMode(isChecked);
+                }
                 uiPrefs.edit().putBoolean(PREF_WINTER_MODE, isChecked).apply();
 
                 // Notify MainActivity to update visibility immediately
@@ -453,6 +484,9 @@ etTextWindowChars.setOnEditorActionListener((v, actionId, event) -> {
             if (!switchAmoled.isEnabled())
                 return;
 
+            if (SPManager.isReady()) {
+                SPManager.getInstance().setAmoledTheme(isChecked);
+            }
             uiPrefs.edit().putBoolean(PREF_AMOLED, isChecked).apply();
             // Recreate activity to apply AMOLED theme
             if (getActivity() != null) {
